@@ -32,3 +32,9 @@ Una aplicación móvil que te ayudará a crear hábitos saludables y a mantenerl
    npm run convcommit
    ```
    Te guiará en el proceso para que cumplas con el formato adecuado.
+
+   El repositorio cuenta con _pre-commit hooks_ que se encargan de asegurar que se cumplan ciertos requisitos. Para cambios pequeños y rápidos que no requiran mayores verificaciones, puedes saltarte este paso utilizando la _flag_ `--no-verify`:
+
+   ```bash
+   npm run convcommit -- --no-verify
+   ```
