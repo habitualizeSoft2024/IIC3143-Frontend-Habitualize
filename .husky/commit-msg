@@ -1,0 +1,2 @@
+echo "\n[CONVENTIONAL COMMIT CHECK]\n"
+npx --no -- commitlint --edit $1
