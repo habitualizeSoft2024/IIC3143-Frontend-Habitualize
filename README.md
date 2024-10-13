@@ -1,6 +1,10 @@
 # Bienvenido a Habitualize 👋
 
-Una aplicación móvil que te ayudará a crear hábitos saludables y a mantenerlos.
+Una aplicación que te ayudará a crear hábitos saludables y a mantenerlos.
+
+- Versión en producción (rama `main`): https://habitualize.netlify.app/
+
+- Versión en desarrollo (rama `dev`): https://dev--habitualize.netlify.app/
 
 ## Para correr la aplicación...
 
@@ -26,12 +30,11 @@ Una aplicación móvil que te ayudará a crear hábitos saludables y a mantenerl
    npm install
    ```
 
-2. Para realizar un _commit_ utiliza el siguiente comando:
+2. Para realizar un _commit_ utiliza el siguiente comando, que te guiará en el proceso para que cumplas con el formato adecuado:
 
    ```bash
    npm run convcommit
    ```
-   Te guiará en el proceso para que cumplas con el formato adecuado.
 
    El repositorio cuenta con _pre-commit hooks_ que se encargan de asegurar que se cumplan ciertos requisitos. Para cambios pequeños y rápidos que no requiran mayores verificaciones, puedes saltarte este paso utilizando la _flag_ `--no-verify`:
 
