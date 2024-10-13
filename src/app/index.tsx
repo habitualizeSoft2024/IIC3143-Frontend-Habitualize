@@ -28,10 +28,10 @@ export default function Index() {
         alignItems: 'center',
       }}
     >
-      <Text>Hello World!</Text>
+      <Text>Hello, World!</Text>
       <Text>
         {backendGreeting
-          ? 'Backend says:' + backendGreeting
+          ? 'Backend says: ' + backendGreeting
           : 'No greetings available from backend :('}
       </Text>
     </View>

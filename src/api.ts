@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://www.rlabb.works/',
+  baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://main.rlabb.works/',
 }) as CustomAxiosInstance;
 
 interface CustomAxiosInstance extends AxiosInstance {
