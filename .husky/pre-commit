@@ -1,9 +1,20 @@
 echo "\n[BEGIN PRE-COMMIT HOOKS]"
+
 echo "\nAudit and fix dependencies...\n"
 npx npm audit fix --audit-level=high
+
 echo "\nRun expo-doctor...\n"
 npx expo-doctor
+
 echo "\nRun formatter...\n"
 npx lint-staged
+
 echo "\nRun tests...\n"
 npm test
+
+echo "\nAdd all files to commit...\n"
+git add .
+
+echo "\n[END PRE-COMMIT HOOKS]"
+
+
