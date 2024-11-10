@@ -28,7 +28,7 @@ async function login(
     username,
     status,
   });
-  return response.data; // Assuming the response contains the JWT and user ID
+  return response.data;
 }
 api.login = login;
 
@@ -45,7 +45,7 @@ async function createUser(
     password,
     status,
   });
-  return response.data; // Assuming the response contains the created user data
+  return response.data;
 }
 api.createUser = createUser;
 
