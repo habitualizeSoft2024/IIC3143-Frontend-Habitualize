@@ -1,13 +1,13 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import api from '@/api';
 import { AuthContext } from '@/components/contexts/AuthContext';
-import LoginForm from '@/components/LoginForm';
 
 export default function Index() {
   const [backendGreeting, setBackendGreeting] = useState<string>('');
   const { userId, token } = useContext(AuthContext);
+  const router = useRouter();
 
   useFocusEffect(
     useCallback(() => {
@@ -20,6 +20,10 @@ export default function Index() {
         }
       }
       getBackendGreeting();
+
+      if (!userId) {
+        router.push('/login');
+      }
     }, []),
   );
 
@@ -31,14 +35,27 @@ export default function Index() {
           : 'No greetings available from backend :'}
       </Text>
 
-      {userId ? (
+      {
+        <>
+          if (userId){' '}
+          {
+            <>
+              <Text>Welcome back, User {userId}!</Text>
+              <Text>Your token is: {token}</Text>
+            </>
+          }
+        </>
+      }
+
+      {/* {userId ? (
         <>
           <Text>Welcome back, User {userId}!</Text>
           <Text>Your token is: {token}</Text>
         </>
       ) : (
+        // router.replace('/login');
         <LoginForm />
-      )}
+      )} */}
     </View>
   );
 }
