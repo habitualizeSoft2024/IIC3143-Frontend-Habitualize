@@ -1,78 +1,63 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { AuthContext } from './contexts/AuthContext';
-import api from '@/api';
 import { useRouter } from 'expo-router';
+import { Formik } from 'formik';
+import { useSession } from '@/contexts/AuthContext';
 
 export default function LoginForm() {
-  const { login, createUser } = useContext(AuthContext);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { logIn } = useSession();
 
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleLogin = async (values: any) => {
     try {
-      const response = await api.login(email, password, username, status); // VERIFICAR BEN ESTO
-      if (response.token) {
-        // esto es solo una idea, buscar una forma de guardar el token en el contexto
-        // await AsyncStorage.setItem('token', response.token);
-
-        router.push('/landingpage');
-      } else {
-        console.log('Login failed. Please check your credentials.');
-      }
+      await logIn(values); // VERIFICAR BEN ESTO
     } catch (error) {
       console.error(error);
       console.log('Login failed. Please check your credentials.');
+      setError('Login failed. Please check your credentials.');
     }
   };
 
-  const handleCreateAccount = async () => {
-    try {
-      // get response from create user
-      await createUser(username, email, password);
-    } catch (error) {
-      setError('Account creation failed. Please try again.');
-    }
-  };
   return (
-    <div style={styles.container}>
-      <View>
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={true}
-          style={styles.input}
-        />
+    <Formik initialValues={{ email: '', password: '' }} onSubmit={handleLogin}>
+      {({ handleChange, handleBlur, handleSubmit, values }) => (
+        <View style={styles.container}>
+          <View>
+            <TextInput
+              placeholder="Email"
+              value={values.email}
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+            />
 
-        <Button title="Login" onPress={handleLogin} />
+            <TextInput
+              placeholder="Password"
+              value={values.password}
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+              secureTextEntry={true}
+              style={styles.input}
+            />
 
-        <Text>Don't have an account?</Text>
+            <Button title="Login" onPress={handleSubmit as any} />
 
-        <Button title="Create Account" onPress={handleCreateAccount} />
+            <Text>Don't have an account?</Text>
 
-        {error && <Text>{error}</Text>}
-      </View>
-    </div>
+            <Button
+              title="Create Account"
+              onPress={() => router.navigate('/signup')}
+            />
+
+            {error && <Text>{error}</Text>}
+          </View>
+        </View>
+      )}
+    </Formik>
   );
 }
 

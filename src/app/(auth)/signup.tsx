@@ -1,17 +1,16 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import LoginForm from '../components/LoginForm';
+import LoginForm from '@/components/LoginForm';
 import { useRouter } from 'expo-router';
 
 export default function Register() {
-  const navigation = useNavigation();
   const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
       <LoginForm />
-      <Text onPress={() => router.push('/login')}>
+      <Text onPress={() => router.navigate('/login')}>
         Already have an account? Login here
       </Text>
     </View>

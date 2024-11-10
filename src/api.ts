@@ -6,8 +6,8 @@ const api = axios.create({
 
 interface CustomAxiosInstance extends AxiosInstance {
   getGreeting: typeof getGreeting;
-  login: typeof login;
-  createUser: typeof createUser;
+  logIn: typeof logIn;
+  signUp: typeof signUp;
 }
 
 async function getGreeting() {
@@ -15,38 +15,33 @@ async function getGreeting() {
 }
 api.getGreeting = getGreeting;
 
-async function login(
-  email: string,
-  password: string,
-  username: string,
-  status: string,
-) {
-  status = status || 'active'; // Default to 'active' if not provided
-  const response = await api.post('/users/login/', {
-    email,
-    password,
-    username,
-    status,
-  });
-  return response.data;
+async function logIn({ email, password }: { email: string; password: string }) {
+  return (
+    await api.post('/users/login/', {
+      email,
+      password,
+    })
+  ).data;
 }
-api.login = login;
+api.logIn = logIn;
 
-async function createUser(
-  username: string,
-  email: string,
-  password: string,
-  status: string,
-) {
-  status = status || 'active'; // Default to 'active' if not provided
-  const response = await api.post('/users', {
-    username,
-    email,
-    password,
-    status,
-  });
-  return response.data;
+async function signUp({
+  username,
+  email,
+  password,
+}: {
+  username: string;
+  email: string;
+  password: string;
+}) {
+  return (
+    await api.post('/users/signup', {
+      username,
+      email,
+      password,
+    })
+  ).data;
 }
-api.createUser = createUser;
+api.signUp = signUp;
 
 export default api;
