@@ -19,7 +19,7 @@ export default function SignupForm() {
       await signUp(values);
     } catch (error) {
       console.error(error);
-      console.log('Signup failed.');
+      console.error('Signup failed.');
       setError(
         '¡Oops! Registro fallido. ¿Estás seguro que ingresaste un correo electrónico válido?',
       );

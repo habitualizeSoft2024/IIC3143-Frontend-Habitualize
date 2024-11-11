@@ -19,7 +19,7 @@ export default function LoginForm() {
       await logIn(values);
     } catch (error) {
       console.error(error);
-      console.log('Login failed.');
+      console.error('Login failed.');
       setError(
         '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que tu correo electrónico y contraseña son correctos?',
       );
@@ -27,11 +27,22 @@ export default function LoginForm() {
   };
 
   return (
-    <Formik initialValues={{ email: '', password: '' }} onSubmit={handleLogin}>
+    <Formik
+      initialValues={{ email: '', password: '', username: '' }}
+      onSubmit={handleLogin}
+    >
       {({ handleChange, handleBlur, handleSubmit, values }) => (
         <View>
           <View style={styles.container}>
             <Text style={styles.title}>Iniciar sesión</Text>
+            <TextInput
+              placeholder="Nombre de usuario"
+              placeholderTextColor="#9e9e9e"
+              value={values.username}
+              onChangeText={handleChange('username')}
+              onBlur={handleBlur('username')}
+              style={styles.input}
+            />
             <TextInput
               placeholder="Correo electrónico"
               placeholderTextColor="#9e9e9e"

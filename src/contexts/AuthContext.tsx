@@ -55,7 +55,15 @@ const SessionContext = createContext<{
     email: string;
     password: string;
   }) => any;
-  logIn: ({ email, password }: { email: string; password: string }) => any;
+  logIn: ({
+    email,
+    password,
+    username,
+  }: {
+    email: string;
+    password: string;
+    username: string;
+  }) => any;
   logOut: () => void;
 }>({
   token: '',
@@ -159,14 +167,17 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   async function logIn({
     email,
     password,
+    username,
   }: {
     email: string;
     password: string;
+    username: string;
   }) {
     try {
       const response = await api.logIn({
         email,
         password,
+        username,
       });
       const { access: token } = response;
       const userId = parseJwt(token).user_id;
