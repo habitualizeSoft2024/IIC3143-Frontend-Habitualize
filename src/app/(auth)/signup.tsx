@@ -1,34 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import LoginForm from '@/components/LoginForm';
-import { useRouter } from 'expo-router';
+import Screen from '@/components/Screen';
+import SignupForm from '@/components/SignupForm';
 
-export default function Register() {
-  const router = useRouter();
+export default function Login() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <LoginForm />
-      <Text onPress={() => router.navigate('/login')}>
-        Already have an account? Login here
-      </Text>
-    </View>
+    <Screen>
+      {/* aquí poner un logo para habitualize */}
+      <SignupForm />
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9f9',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#333',
-  },
-});

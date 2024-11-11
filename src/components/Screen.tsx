@@ -7,6 +7,7 @@ export default function Screen({ ...props }: ScrollViewProps) {
       contentContainerStyle={{
         flexGrow: 1,
         justifyContent: 'center',
+        padding: 20,
       }}
       {...props}
     />
