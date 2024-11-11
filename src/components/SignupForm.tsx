@@ -10,31 +10,31 @@ import { router } from 'expo-router';
 import { Formik } from 'formik';
 import { useSession } from '@/contexts/AuthContext';
 
-export default function LoginForm() {
+export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
-  const { logIn } = useSession();
+  const { signUp } = useSession();
 
-  const handleLogin = async (values: any) => {
+  const handleSignup = async (values: any) => {
     try {
-      await logIn(values);
+      await signUp(values);
     } catch (error) {
       console.error(error);
-      console.error('Login failed.');
+      console.error('Signup failed.');
       setError(
-        '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que tu correo electrónico y contraseña son correctos?',
+        '¡Oops! Registro fallido. ¿Estás seguro que ingresaste un correo electrónico válido?',
       );
     }
   };
 
   return (
     <Formik
-      initialValues={{ email: '', password: '', username: '' }}
-      onSubmit={handleLogin}
+      initialValues={{ username: '', email: '', password: '' }}
+      onSubmit={handleSignup}
     >
       {({ handleChange, handleBlur, handleSubmit, values }) => (
         <View>
           <View style={styles.container}>
-            <Text style={styles.title}>Iniciar sesión</Text>
+            <Text style={styles.title}>Registrarme</Text>
             <TextInput
               placeholder="Nombre de usuario"
               placeholderTextColor="#9e9e9e"
@@ -49,11 +49,8 @@ export default function LoginForm() {
               value={values.email}
               onChangeText={handleChange('email')}
               onBlur={handleBlur('email')}
-              autoCapitalize="none"
-              keyboardType="email-address"
               style={styles.input}
             />
-
             <TextInput
               placeholder="Contraseña"
               placeholderTextColor="#9e9e9e"
@@ -68,16 +65,13 @@ export default function LoginForm() {
               style={styles.button}
               onPress={handleSubmit as any}
             >
-              <Text style={styles.buttonText}>Ingresar</Text>
+              <Text style={styles.buttonText}>Registrarme</Text>
             </TouchableOpacity>
 
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
-              <TouchableOpacity onPress={() => router.navigate('/signup')}>
-                <Text style={styles.link}>¿No tienes una cuenta?</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.link}>¿Se te olvidó tu contraseña?</Text>
+              <TouchableOpacity onPress={() => router.navigate('/login')}>
+                <Text style={styles.link}>¿Ya te encuentras registrado?</Text>
               </TouchableOpacity>
             </View>
           </View>

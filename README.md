@@ -17,7 +17,7 @@ Una aplicación que te ayudará a crear hábitos saludables y a mantenerlos.
 2. Corre la aplicación:
 
    ```bash
-    npx expo web
+    npx expo --web
    ```
 
 ¡Listo! La aplicación debió haber abierto en tu navegador. De otro modo, puedes abrirla manualmente siguiendo las indicaciones mostradas en la consola.
