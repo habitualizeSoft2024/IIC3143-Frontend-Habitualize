@@ -20,6 +20,12 @@ Una aplicación que te ayudará a crear hábitos saludables y a mantenerlos.
     npx expo web
    ```
 
+(*Alternativamente* al paso 2, puedes correr la aplicación como **developer**, observando cambios del código en tiempo real al modificarlo):
+
+   ```bash
+    npm run start
+   ```
+
 ¡Listo! La aplicación debió haber abierto en tu navegador. De otro modo, puedes abrirla manualmente siguiendo las indicaciones mostradas en la consola.
 
 ## Para realizar commits...
