@@ -9,6 +9,7 @@ import api from '@/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Preloader from '@/components/Preloader';
 import { AxiosResponse } from 'axios';
+import { router } from 'expo-router';
 
 function parseJwt(token: string) {
   try {
@@ -134,7 +135,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     password: string;
   }) {
     try {
-      const response = await api.signUp({
+      const response = await api.createUser({
         username,
         email,
         password,
@@ -148,7 +149,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       const userId = parseJwt(token).user_id;
       setToken(token);
       setUserId(userId);
-      return response;
+      router.navigate('/');
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
@@ -171,7 +172,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       const userId = parseJwt(token).user_id;
       setToken(token);
       setUserId(userId);
-      return response;
+      router.navigate('/');
     } catch (error) {
       console.error('Error logging in:', error);
       throw error;

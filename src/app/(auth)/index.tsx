@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Screen from '@/components/Screen';
 import { router } from 'expo-router';
 
@@ -29,12 +29,12 @@ export default function LandingPage() {
             Gestiona tus metas, recordatorios y observa tu progreso.
           </Text>
 
-          <Pressable
+          <TouchableOpacity
             style={styles.button}
             onPress={() => router.navigate('/login')}
           >
             <Text style={styles.buttonText}>Ingresar</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
     </Screen>

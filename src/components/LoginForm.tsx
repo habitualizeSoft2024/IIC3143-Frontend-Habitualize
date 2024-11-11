@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Formik } from 'formik';
 import { useSession } from '@/contexts/AuthContext';
@@ -47,18 +53,21 @@ export default function LoginForm() {
               style={styles.input}
             />
 
-            <Pressable style={styles.button} onPress={handleSubmit as any}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit as any}
+            >
               <Text style={styles.buttonText}>Ingresar</Text>
-            </Pressable>
+            </TouchableOpacity>
 
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
-              <Pressable onPress={() => router.navigate('/signup')}>
+              <TouchableOpacity onPress={() => router.navigate('/signup')}>
                 <Text style={styles.link}>¿No tienes una cuenta?</Text>
-              </Pressable>
-              <Pressable>
+              </TouchableOpacity>
+              <TouchableOpacity>
                 <Text style={styles.link}>¿Se te olvidó tu contraseña?</Text>
-              </Pressable>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
