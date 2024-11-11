@@ -1,20 +1,9 @@
-import React, { useCallback, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useFocusEffect } from 'expo-router';
-import api from '@/api';
-import { useSession } from '@/contexts/AuthContext';
+import React, { useState } from 'react';
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import Screen from '@/components/Screen';
+import { router } from 'expo-router';
 
 export default function Index() {
-  const [backendGreeting, setBackendGreeting] = useState<string>('');
-  const { userId, token } = useSession();
-
   const [goals, setGoals] = useState([
     { id: 1, text: 'No fumar', checked: false },
     { id: 2, text: 'Ir al gimnasio', checked: false },
@@ -26,20 +15,6 @@ export default function Index() {
     { id: 1, text: 'Pagar suscripción de gym', checked: false },
     { id: 2, text: 'Comprar suplementos', checked: false },
   ]);
-
-  useFocusEffect(
-    useCallback(() => {
-      async function getBackendGreeting() {
-        try {
-          const response = await api.getGreeting();
-          setBackendGreeting(response.data);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      getBackendGreeting();
-    }, []),
-  );
 
   const toggleGoal = (id: number) => {
     setGoals((prevGoals) =>
@@ -60,19 +35,8 @@ export default function Index() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {backendGreeting && (
-        <Text style={styles.greetingText}>
-          {'Backend says: ' + backendGreeting}
-        </Text>
-      )}
-      {userId && (
-        <>
-          <Text style={styles.userText}>Welcome back, User {userId}!</Text>
-          <Text style={styles.tokenText}>Your token is: {token}</Text>
-        </>
-      )}
-
+    <Screen>
+      <Text style={styles.greetingText}>{'Bienvenid@ de vuelta'}</Text>
       <View style={styles.grid}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recordatorios</Text>
@@ -137,8 +101,13 @@ export default function Index() {
               </View>
             ))}
           </View>
-          <TouchableOpacity style={styles.newGoalButton}>
-            <Text style={styles.newGoalText}>Crear nueva meta</Text>
+          <TouchableOpacity
+            style={styles.newGoalButton}
+            onPress={() => {
+              router.navigate('/habits');
+            }}
+          >
+            <Text style={styles.newGoalText}>Gestionar metas</Text>
           </TouchableOpacity>
         </View>
 
@@ -151,7 +120,7 @@ export default function Index() {
           </View>
         </View>
       </View>
-    </ScrollView>
+    </Screen>
   );
 }
 

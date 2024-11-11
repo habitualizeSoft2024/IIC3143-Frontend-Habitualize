@@ -1,6 +1,12 @@
-import { Stack } from 'expo-router';
+import { useSession } from '@/contexts/AuthContext';
+import { Redirect, Stack } from 'expo-router';
 
 export default function AuthLayout() {
+  const { loggedIn } = useSession();
+  if (loggedIn) {
+    return <Redirect href="/(app)" />;
+  }
+
   return (
     <Stack
       screenOptions={{
