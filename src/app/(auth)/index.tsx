@@ -16,13 +16,6 @@ export default function LandingPage() {
             </Text>
           </View>
           <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>Recordatorios</Text>
-            <Text style={styles.infoDescription}>
-              Recibe recordatorios de tus actividades importantes para no
-              olvidarlas.
-            </Text>
-          </View>
-          <View style={styles.infoBox}>
             <Text style={styles.infoTitle}>Estadísticas</Text>
             <Text style={styles.infoDescription}>
               Observa tus logros y el progreso de tus metas en tiempo real.
