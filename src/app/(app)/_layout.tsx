@@ -15,6 +15,7 @@ export default function RootLayout() {
         name="index"
         options={{
           drawerLabel: 'Inicio',
+          headerTitle: 'Habitualize',
         }}
       />
     </Drawer>
