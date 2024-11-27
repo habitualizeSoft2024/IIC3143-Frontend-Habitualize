@@ -86,6 +86,9 @@ type HabitRequestData = {
   name: string;
   description: string;
   expected_counter: number;
+  counter: number;
+  current_streak: number;
+  highest_streak: number;
 };
 
 function transformSingleHabitToRequestData(habit: Habit): HabitRequestData {
@@ -95,6 +98,9 @@ function transformSingleHabitToRequestData(habit: Habit): HabitRequestData {
     name: habit.name,
     description: habit.description,
     expected_counter: habit.expected_counter,
+    counter: habit.counter,
+    current_streak: habit.current_streak,
+    highest_streak: habit.highest_streak,
   };
 }
 
@@ -104,9 +110,9 @@ function transformHabitData(data: HabitRequestData[]): Habit[] {
     user_id: `${item.user}`,
     name: item.name,
     description: item.description,
-    counter: 5,
-    current_streak: 5,
-    highest_streak: 10,
+    counter: item.counter,
+    current_streak: item.current_streak,
+    highest_streak: item.highest_streak,
     expected_counter: item.expected_counter,
   }));
 }
@@ -188,29 +194,29 @@ export default function HabitsScreen() {
     }
   }
 
-  // TODO: Para Entrega Final
   const onIncrease = (habit: Habit) => {
-    // Incrementa el contador del habit, este cambio por el momento solo incrementa su valor con setHabits
-    // Se debe implementar la actualización en la base de datos
-    setHabits(
-      habits.map((h) =>
-        h.habit_id === habit.habit_id ? { ...h, counter: h.counter + 1 } : h,
-      ),
-    );
+    try {
+      api.updateHabit({
+        id: +habit.habit_id,
+        counter: habit.counter + 1,
+      });
+      fetchHabits();
+    } catch (error) {
+      console.error('Error updating habit:', error);
+    }
   };
 
-  // TODO: Para Entrega Final
-  const onDecrease = (habit: Habit) => {
-    // Decrementa el contador del habit, este cambio por el momento solo decrementa su valor con setHabits
-    // Se debe implementar la actualización en la base de datos
-    setHabits(
-      habits.map((h) =>
-        h.habit_id === habit.habit_id
-          ? { ...h, counter: h.counter - 1 > 0 ? h.counter - 1 : 0 }
-          : h,
-      ),
-    );
-  };
+  async function onDecrease(habit: Habit) {
+    try {
+      await api.updateHabit({
+        id: +habit.habit_id,
+        counter: habit.counter - 1 < 0 ? 0 : habit.counter - 1,
+      });
+      fetchHabits();
+    } catch (error) {
+      console.error('Error updating habit:', error);
+    }
+  }
 
   return (
     <Screen>
