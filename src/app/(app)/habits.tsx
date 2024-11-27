@@ -14,6 +14,7 @@ import HabitBlock from '@/components/HabitBlock';
 import Screen from '@/components/Screen';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Formik } from 'formik';
+import HabitScreenModalForm from '@/components/HabitScreenModalForm';
 
 // Datos Mock
 const mockHabits = [
@@ -249,76 +250,14 @@ export default function HabitsScreen() {
           />
         </LinearGradient>
         {/* Modal for Creating or Editing a Habit */}
-        <Modal
-          visible={isModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalBackground}>
-            <Formik
-              initialValues={
-                isEditing
-                  ? {
-                      name: selectedHabit?.name,
-                      description: selectedHabit?.description,
-                      expected_counter:
-                        selectedHabit?.expected_counter.toString(),
-                    }
-                  : {
-                      name: '',
-                      description: '',
-                      expected_counter: '',
-                    }
-              }
-              onSubmit={isEditing ? updateHabit : createHabit}
-            >
-              {({ handleChange, handleBlur, handleSubmit, values }) => (
-                <View style={styles.modalContainer}>
-                  <Text style={styles.modalTitle}>Nuevo Hábito</Text>
-                  <TextInput
-                    placeholder="Nombre"
-                    style={styles.input}
-                    value={values.name}
-                    onChangeText={handleChange('name')}
-                    onBlur={handleBlur('name')}
-                  />
-                  <TextInput
-                    placeholder="Descripción"
-                    style={styles.input}
-                    value={values.description}
-                    onChangeText={handleChange('description')}
-                    onBlur={handleBlur('description')}
-                  />
-                  <TextInput
-                    placeholder="Contador esperado"
-                    keyboardType="numeric"
-                    style={styles.input}
-                    value={values.expected_counter}
-                    onChangeText={handleChange('expected_counter')}
-                    onBlur={handleBlur('expected_counter')}
-                  />
-                  <View style={styles.modalButtons}>
-                    <TouchableOpacity
-                      style={styles.deletebutton}
-                      onPress={closeModal}
-                    >
-                      <Text style={styles.buttonText}>Cancelar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={handleSubmit as any}
-                    >
-                      <Text style={styles.buttonText}>
-                        {isEditing ? 'Guardar' : 'Crear'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-            </Formik>
-          </View>
-        </Modal>
+        <HabitScreenModalForm
+          isVisible={isModalVisible}
+          isEditing={isEditing}
+          selectedHabit={selectedHabit}
+          closeModal={closeModal}
+          createHabit={createHabit}
+          updateHabit={updateHabit}
+        />
       </View>
     </Screen>
   );
