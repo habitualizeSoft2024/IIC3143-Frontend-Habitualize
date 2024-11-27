@@ -55,6 +55,7 @@ api.getHabits = getHabits;
 async function getHabit({ id }: { id: number }) {
   return (await api.get('habit/' + id + '/')).data;
 }
+api.getHabit = getHabit;
 
 async function updateHabit({
   id,
@@ -64,6 +65,7 @@ async function updateHabit({
   name?: string;
   description?: string;
   expected_counter?: number;
+  counter?: number;
 }) {
   return (await api.patch('/habit/' + id + '/', payload)).data;
 }
