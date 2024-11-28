@@ -163,11 +163,10 @@ export default function HabitsScreen() {
     try {
       await api.createHabit({
         ...values,
-      // espera 0.3 segundos para actualizar la lista de hábitos
-      setTimeout(() => fetchHabits(), 300);
         expected_counter: +values.expected_counter,
       });
-      fetchHabits();
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
       closeModal();
     } catch (error) {
       console.error('Error creating habit:', error);
@@ -179,11 +178,10 @@ export default function HabitsScreen() {
       await api.updateHabit({
         id: selectedHabit?.habit_id,
         ...values,
-      // espera 0.3 segundos para actualizar la lista de hábitos
-      setTimeout(() => fetchHabits(), 300);
         expected_counter: +values.expected_counter,
       });
-      fetchHabits();
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
       closeModal();
     } catch (error) {
       console.error('Error updating habit:', error);
@@ -194,11 +192,10 @@ export default function HabitsScreen() {
     // Transformamos el habit a un objeto que pueda ser enviado a la API
     const habitData = transformSingleHabitToRequestData(habit);
     // Enviamos el habit a la API
-      // espera 0.3 segundos para actualizar la lista de hábitos
-      setTimeout(() => fetchHabits(), 300);
     try {
       await api.deleteHabit(habitData);
-      fetchHabits();
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
     } catch (error) {
       console.error('Error deleting habit:', error);
     }
@@ -212,7 +209,6 @@ export default function HabitsScreen() {
       });
       // espera 0.3 segundos para actualizar la lista de hábitos
       setTimeout(() => fetchHabits(), 300);
-      fetchHabits();
     } catch (error) {
       console.error('Error updating habit:', error);
     }
@@ -226,7 +222,6 @@ export default function HabitsScreen() {
       });
       // espera 0.3 segundos para actualizar la lista de hábitos
       setTimeout(() => fetchHabits(), 300);
-      fetchHabits();
     } catch (error) {
       console.error('Error updating habit:', error);
     }
