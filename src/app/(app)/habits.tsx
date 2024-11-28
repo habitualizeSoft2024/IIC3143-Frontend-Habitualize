@@ -126,7 +126,10 @@ export default function HabitsScreen() {
   async function fetchHabits() {
     try {
       const response = await api.getHabits(); // Replace with your actual API call
-      setHabits(transformHabitData(response));
+      const sortedHabits = transformHabitData(response).sort(
+        (a, b) => +a.habit_id - +b.habit_id,
+      );
+      setHabits(sortedHabits);
     } catch (error) {
       console.error('Error fetching habits:', error);
       setHabits(mockHabits); // Use mock data on error for testing
@@ -160,6 +163,8 @@ export default function HabitsScreen() {
     try {
       await api.createHabit({
         ...values,
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
         expected_counter: +values.expected_counter,
       });
       fetchHabits();
@@ -174,6 +179,8 @@ export default function HabitsScreen() {
       await api.updateHabit({
         id: selectedHabit?.habit_id,
         ...values,
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
         expected_counter: +values.expected_counter,
       });
       fetchHabits();
@@ -187,6 +194,8 @@ export default function HabitsScreen() {
     // Transformamos el habit a un objeto que pueda ser enviado a la API
     const habitData = transformSingleHabitToRequestData(habit);
     // Enviamos el habit a la API
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
     try {
       await api.deleteHabit(habitData);
       fetchHabits();
@@ -201,6 +210,8 @@ export default function HabitsScreen() {
         id: +habit.habit_id,
         counter: habit.counter + 1,
       });
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
       fetchHabits();
     } catch (error) {
       console.error('Error updating habit:', error);
@@ -213,6 +224,8 @@ export default function HabitsScreen() {
         id: +habit.habit_id,
         counter: habit.counter - 1 < 0 ? 0 : habit.counter - 1,
       });
+      // espera 0.3 segundos para actualizar la lista de hábitos
+      setTimeout(() => fetchHabits(), 300);
       fetchHabits();
     } catch (error) {
       console.error('Error updating habit:', error);
@@ -239,6 +252,7 @@ export default function HabitsScreen() {
                 onDelete={onDelete}
               />
             )}
+            keyExtractor={(item) => item.habit_id.toString()}
             ListFooterComponent={
               <TouchableOpacity
                 onPress={openCreateModal}
