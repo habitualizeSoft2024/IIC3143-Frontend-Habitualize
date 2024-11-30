@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Screen from '@/components/Screen';
 import { router } from 'expo-router';
+import {
+  MockEmptyLineChart,
+  MockEmptyPieChart,
+  MockLineChart,
+  MockPieChart,
+} from '@/components/HabitChart';
 
 export default function Index() {
   const [goals, setGoals] = useState([
@@ -117,6 +123,11 @@ export default function Index() {
             <Text style={styles.cardText}>87% Compromisos Cumplidos</Text>
             <Text style={styles.cardText}>15 días sin fumar</Text>
             <Text style={styles.cardText}>30 horas de ejercicio</Text>
+
+            <MockLineChart />
+            <MockPieChart />
+            <MockEmptyLineChart />
+            <MockEmptyPieChart />
           </View>
         </View>
       </View>
