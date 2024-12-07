@@ -22,6 +22,13 @@ export default function RootLayout() {
       }}
     >
       <Drawer.Screen
+        name="profile"
+        options={{
+          drawerLabel: 'Perfil',
+          headerTitle: 'Perfil de usuario',
+        }}
+      />
+      <Drawer.Screen
         name="index"
         options={{
           drawerLabel: 'Inicio',

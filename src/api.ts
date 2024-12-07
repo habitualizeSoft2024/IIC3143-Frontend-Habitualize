@@ -9,6 +9,7 @@ interface CustomAxiosInstance extends AxiosInstance {
   logIn: typeof logIn;
   createUser: typeof createUser;
   createHabit: typeof createHabit;
+  getUser: typeof getUser;
   getHabits: typeof getHabits;
   getHabit: typeof getHabit;
   updateHabit: typeof updateHabit;
@@ -37,6 +38,11 @@ async function createUser(payload: {
   return (await api.post('/user/', payload)).data;
 }
 api.createUser = createUser;
+
+async function getUser({ id }: { id: string }) {
+  return (await api.get(`user/${id}`)).data;
+}
+api.getUser = getUser;
 
 async function createHabit(payload: {
   name: string;

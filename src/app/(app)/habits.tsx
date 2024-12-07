@@ -13,7 +13,7 @@ import Preloader from '@/components/Preloader';
 import { useSession } from '@/contexts/AuthContext';
 import HabitScreenModalForm from '@/components/HabitScreenModalForm';
 
-export default function Index() {
+export default function Habits() {
   const [habits, setHabits] = useState<any[] | null>(null);
   const [selectedHabit, setSelectedHabit] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);

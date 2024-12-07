@@ -56,7 +56,13 @@ export default function HabitScreenModalForm({
           }}
           onSubmit={selectedHabit ? editHabit : createHabit}
         >
-          {({ handleChange, handleBlur, handleSubmit, values }) => (
+          {({
+            isSubmitting,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+          }) => (
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>
                 {selectedHabit ? 'Editar hábito' : 'Nuevo hábito'}
@@ -96,6 +102,7 @@ export default function HabitScreenModalForm({
                 <TouchableOpacity
                   style={styles.button}
                   onPress={handleSubmit as any}
+                  disabled={isSubmitting}
                 >
                   <Text style={styles.buttonText}>
                     {selectedHabit ? 'Guardar' : 'Crear'}
