@@ -1,133 +1,137 @@
-import React, { useState } from 'react';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import Screen from '@/components/Screen';
-import { router } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
-  MockEmptyLineChart,
-  MockEmptyPieChart,
-  MockLineChart,
-  MockPieChart,
-} from '@/components/HabitChart';
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Screen from '@/components/Screen';
+import { router, useFocusEffect } from 'expo-router';
+import api from '@/api';
+import Preloader from '@/components/Preloader';
+import { PieChart } from 'react-native-gifted-charts';
+import { useSession } from '@/contexts/AuthContext';
 
 export default function Index() {
-  const [goals, setGoals] = useState([
-    { id: 1, text: 'No fumar', checked: false },
-    { id: 2, text: 'Ir al gimnasio', checked: false },
-    { id: 3, text: 'No morder uñas', checked: false },
-    { id: 4, text: 'Comer verduras', checked: false },
-  ]);
+  const [habits, setHabits] = useState<any[] | null>(null);
+  const { username, logOut } = useSession();
 
-  const [reminders, setReminders] = useState([
-    { id: 1, text: 'Pagar suscripción de gym', checked: false },
-    { id: 2, text: 'Comprar suplementos', checked: false },
-  ]);
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchHabits() {
+        try {
+          const habits = await api.getHabits();
+          setHabits(habits);
+        } catch {}
+      }
+      fetchHabits();
+    }, []),
+  );
 
-  const toggleGoal = (id: number) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) =>
-        goal.id === id ? { ...goal, checked: !goal.checked } : goal,
-      ),
+  async function changeHabitCounter(habit: any, change: number) {
+    try {
+      await api.updateHabit({ id: habit.id, counter: habit.counter + change });
+      setHabits(
+        (prevHabits) =>
+          prevHabits &&
+          prevHabits.map((prevHabit) =>
+            prevHabit.id === habit.id
+              ? { ...prevHabit, counter: prevHabit.counter + change }
+              : prevHabit,
+          ),
+      );
+    } catch {}
+  }
+
+  if (!habits) {
+    return <Preloader />;
+  }
+
+  if (habits.length === 0) {
+    return (
+      <Screen>
+        <Text style={styles.greetingText}>{`¡Hola, ${username}!`}</Text>
+        <TouchableOpacity
+          style={styles.manageHabits}
+          onPress={() => {
+            router.navigate('/habits');
+          }}
+        >
+          <Text style={styles.manageHabitsText}>Gestionar hábitos</Text>
+        </TouchableOpacity>
+      </Screen>
     );
-  };
-
-  const toggleReminder = (id: number) => {
-    setReminders((prevReminders) =>
-      prevReminders.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, checked: !reminder.checked }
-          : reminder,
-      ),
-    );
-  };
+  }
 
   return (
     <Screen>
-      <Text style={styles.greetingText}>{'Bienvenid@ de vuelta'}</Text>
-      <View style={styles.grid}>
+      <Text style={styles.greetingText}>{`¡Hola, ${username}!`}</Text>
+      <View style={styles.container}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recordatorios</Text>
-          <View style={styles.card}>
-            {reminders.map((reminder) => (
-              <View
-                key={reminder.id}
-                style={[
-                  styles.reminderItem,
-                  reminder.checked && styles.reminderItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.reminderText,
-                    reminder.checked && styles.reminderTextChecked,
-                  ]}
-                >
-                  {reminder.text}
-                </Text>
-                <Switch
-                  value={reminder.checked}
-                  onValueChange={() => toggleReminder(reminder.id)}
-                />
+          <Text style={styles.sectionTitle}>Hábitos</Text>
+          <ScrollView style={styles.habits}>
+            {habits.map((habit: any, index) => (
+              <View key={index} style={styles.habitContainer}>
+                <View style={styles.row}>
+                  <View>
+                    <Text style={styles.habitName}>{habit.name}</Text>
+                    <Text style={styles.habitInfo}>
+                      Contador: {habit.counter}
+                    </Text>
+                  </View>
+
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={styles.counterButton}
+                      onPress={() => changeHabitCounter(habit, -1)}
+                    >
+                      <Text style={styles.counterButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.counterButton}
+                      onPress={() => changeHabitCounter(habit, 1)}
+                    >
+                      <Text style={styles.counterButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Alertas</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardText}>
-              Ha disminuido en un 30% la actividad "no fumar"
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Metas</Text>
-          <View style={styles.card}>
-            {goals.map((goal) => (
-              <View
-                key={goal.id}
-                style={[
-                  styles.goalItem,
-                  goal.checked && styles.goalItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.goalText,
-                    goal.checked && styles.goalTextChecked,
-                  ]}
-                >
-                  {goal.text}
-                </Text>
-                <Switch
-                  value={goal.checked}
-                  onValueChange={() => toggleGoal(goal.id)}
-                />
-              </View>
-            ))}
-          </View>
+          </ScrollView>
           <TouchableOpacity
-            style={styles.newGoalButton}
+            style={styles.manageHabits}
             onPress={() => {
               router.navigate('/habits');
             }}
           >
-            <Text style={styles.newGoalText}>Gestionar metas</Text>
+            <Text style={styles.manageHabitsText}>Gestionar hábitos</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Estadísticas</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardText}>87% Compromisos Cumplidos</Text>
-            <Text style={styles.cardText}>15 días sin fumar</Text>
-            <Text style={styles.cardText}>30 horas de ejercicio</Text>
-
-            <MockLineChart />
-            <MockPieChart />
-            <MockEmptyLineChart />
-            <MockEmptyPieChart />
+          <View style={styles.chart}>
+            <Text style={styles.charTitle}>Compromisos cumplidos</Text>
+            <PieChart
+              donut={true}
+              innerRadius={80}
+              data={[
+                { value: 70, color: '#56A0E6' },
+                { value: 30, color: 'black' },
+              ]}
+              centerLabelComponent={() => {
+                return <Text style={styles.chartText}>70%</Text>;
+              }}
+            />
+            <TouchableOpacity
+              style={styles.manageHabits}
+              onPress={() => {
+                router.navigate('/stats');
+              }}
+            >
+              <Text style={styles.manageHabitsText}>Ver más</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -136,112 +140,104 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#F5F9FC',
-  },
   greetingText: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#4a4a4a',
     textAlign: 'center',
     marginBottom: 20,
   },
-  userText: {
-    fontSize: 16,
-    color: '#4a4a4a',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  tokenText: {
-    fontSize: 14,
-    color: '#6b6b6b',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  grid: {
+  container: {
+    flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 20,
+    maxHeight: 700,
   },
   section: {
-    width: '48%',
-    marginBottom: 20,
+    flex: 1,
     borderRadius: 10,
     borderColor: '#4ab7bd',
+    backgroundColor: '#ffffff',
     borderWidth: 2,
-    backgroundColor: '#E0F7FA',
+    padding: 20,
+  },
+  habits: {
+    borderWidth: 2,
+    borderColor: 'black',
+    borderRadius: 10,
+    padding: 10,
+  },
+  habitContainer: {
+    padding: 20,
+    borderRadius: 8,
+    backgroundColor: '#BBE8FE',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    marginBottom: 10,
+  },
+  habitName: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  habitInfo: {
+    fontSize: 25,
+    color: '#333',
+    marginBottom: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  chart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '80%',
+    width: '100%',
+    gap: 20,
+    padding: 20,
+  },
+  counterButton: {
+    backgroundColor: 'black',
+    width: 50,
+    height: 50,
+    margin: 5,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  counterButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 30,
+    marginTop: -5,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 40,
     fontWeight: '600',
     color: '#333',
-    padding: 10,
+    padding: 20,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    padding: 15,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    borderTopRightRadius: 8,
-    borderTopLeftRadius: 8,
-  },
-  cardText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 8,
-  },
-  reminderItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-  },
-  reminderItemChecked: {
-    backgroundColor: '#E0F7FA',
-    opacity: 0.6,
-    borderRadius: 5,
-    paddingHorizontal: 5,
-  },
-  reminderText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  reminderTextChecked: {
-    color: '#888',
-    textDecorationLine: 'line-through',
-  },
-  goalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-  },
-  goalItemChecked: {
-    backgroundColor: '#E0F7FA',
-    opacity: 0.6,
-    borderRadius: 5,
-    paddingHorizontal: 5,
-  },
-  goalText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  goalTextChecked: {
-    color: '#888',
-    textDecorationLine: 'line-through',
-  },
-  newGoalButton: {
+  manageHabits: {
     marginTop: 10,
     backgroundColor: '#4ab7bd',
-    padding: 10,
+    padding: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    borderRadius: 10,
   },
-  newGoalText: {
+  manageHabitsText: {
     color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  charTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  chartText: {
+    fontSize: 40,
     fontWeight: 'bold',
   },
 });

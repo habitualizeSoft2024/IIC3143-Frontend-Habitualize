@@ -74,10 +74,9 @@ export default function LoginForm() {
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
               <TouchableOpacity onPress={() => router.navigate('/signup')}>
-                <Text style={styles.link}>¿No tienes una cuenta?</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.link}>¿Se te olvidó tu contraseña?</Text>
+                <Text style={styles.link}>
+                  ¿No tienes una cuenta? ¡Haz click aquí para registrarte!
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

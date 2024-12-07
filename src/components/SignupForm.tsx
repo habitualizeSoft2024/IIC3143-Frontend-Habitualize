@@ -71,7 +71,10 @@ export default function SignupForm() {
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
               <TouchableOpacity onPress={() => router.navigate('/login')}>
-                <Text style={styles.link}>¿Ya te encuentras registrado?</Text>
+                <Text style={styles.link}>
+                  ¿Ya te encuentras registrado? ¡Haz click aquí para iniciar
+                  sesión!
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
