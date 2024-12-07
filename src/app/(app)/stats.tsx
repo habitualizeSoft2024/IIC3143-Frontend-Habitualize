@@ -12,6 +12,8 @@ import api from '@/api';
 import { router, useFocusEffect } from 'expo-router';
 
 import {
+  HabitCounterCompletion,
+  HabitCounterLineChart,
   MockEmptyLineChart,
   MockEmptyPieChart,
   MockLineChart,
@@ -19,6 +21,7 @@ import {
   TotalCompletedHabitsPieChart,
 } from '@/components/HabitChart';
 import StatCarousel from '@/components/StatCarousel';
+import { ScrollView } from 'react-native-gesture-handler';
 
 function transformHabitData(data: HabitRequestData[]): Habit[] {
   return data.map((item) => ({
@@ -64,7 +67,18 @@ interface WeeklyStat {
   name: string;
 }
 
+type Medal = {
+  id: number;
+  name: string;
+  type: string;
+  level: string | null;
+  description: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export default function Index() {
+  // Habits
   const [habits, setHabits] = useState<Habit[]>([]);
   async function fetchHabits() {
     try {
@@ -78,6 +92,7 @@ export default function Index() {
     }
   }
 
+  // Weekly Stats
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStat[][]>([]);
   async function fetchWeeklyStats() {
     try {
@@ -104,140 +119,172 @@ export default function Index() {
       console.error('Error fetching weekly stats:', error);
     }
   }
-
   useEffect(() => {
     if (habits.length > 0) {
       fetchWeeklyStats();
     }
   }, [habits]);
-
   useEffect(() => {
     console.log('Weekly Stats:', weeklyStats);
   }, [weeklyStats]);
-
   useFocusEffect(
     useCallback(() => {
       fetchHabits();
     }, []),
   );
 
-  const [goals, setGoals] = useState([
-    { id: 1, text: 'No fumar', checked: false },
-    { id: 2, text: 'Ir al gimnasio', checked: false },
-    { id: 3, text: 'No morder uñas', checked: false },
-    { id: 4, text: 'Comer verduras', checked: false },
-  ]);
-
-  const [reminders, setReminders] = useState([
-    { id: 1, text: 'Pagar suscripción de gym', checked: false },
-    { id: 2, text: 'Comprar suplementos', checked: false },
-  ]);
-
-  const toggleGoal = (id: number) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) =>
-        goal.id === id ? { ...goal, checked: !goal.checked } : goal,
-      ),
-    );
-  };
-
-  const toggleReminder = (id: number) => {
-    setReminders((prevReminders) =>
-      prevReminders.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, checked: !reminder.checked }
-          : reminder,
-      ),
-    );
-  };
-
   const compresedWeeklyStats = weeklyStats.flat();
 
+  const highestStreakHabit =
+    habits.length > 0
+      ? habits.reduce((acc, habit) => {
+          if (habit.highest_streak > acc.highest_streak) {
+            return habit;
+          }
+          return acc;
+        }, habits[0])
+      : null;
+
+  /* const carouselData = [
+    <MockLineChart />,
+    <MockPieChart />,
+    <MockEmptyLineChart />,
+    <MockEmptyPieChart />
+  ];
+  const WeeklyStatsCarousel = <StatCarousel data={weeklyStats.map((stats, index) => (
+    <View key={index} style={styles.card}>
+      <HabitCounterLineChart data={stats} habitTitle={stats[0].name} />
+      <HabitCounterCompletion data={stats} habitTitle={""} />
+    </View>
+  ))} />;
+
+  const WeeklyStatsScrollView = weeklyStats.map((stats, index) => (
+    <View key={index} style={styles.card}>
+      <HabitCounterLineChart data={stats} habitTitle={stats[0].name} />
+      <HabitCounterCompletion data={stats} habitTitle={""} />
+    </View>
+  )); */
+
+  const WeeklyStatsScrollViewWithCarousel = weeklyStats.map((stats, index) => (
+    <View key={index} style={styles.card}>
+      <StatCarousel
+        data={[
+          <HabitCounterLineChart
+            data={stats}
+            habitTitle={'Hábito: ' + stats[0].name}
+          />,
+          <HabitCounterCompletion
+            data={stats}
+            habitTitle={'Hábito: ' + stats[0].name}
+          />,
+        ]}
+      />
+    </View>
+  ));
+
+  // Medals
+  const [medals, setMedals] = useState<Medal[]>([]);
+  async function fetchMedals() {
+    try {
+      const response = await api.getMedals();
+      setMedals(response);
+    } catch (error) {
+      console.error('Error fetching medals:', error);
+    }
+  }
+  useEffect(() => {
+    fetchMedals();
+  }, []);
+  //print medals
+  useEffect(() => {
+    console.log('Medals:', medals);
+  }, [medals]);
+
+  const MedalGridMap =
+    medals.length > 0 ? (
+      medals.map((medal, index) => (
+        <View key={index} style={styles.section}>
+          <Text style={styles.sectionTitle}>{medal.name}</Text>
+          <Text style={styles.cardText}>{medal.description}</Text>
+        </View>
+      ))
+    ) : (
+      <View
+        style={{
+          ...styles.section,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text>No hay medallas</Text>
+      </View>
+    );
   return (
     <Screen>
-      <Text style={styles.greetingText}>{'Bienvenid@ de vuelta'}</Text>
-      <View style={styles.grid}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recordatorios</Text>
-          <View style={styles.card}>
-            {reminders.map((reminder) => (
-              <View
-                key={reminder.id}
-                style={[
-                  styles.reminderItem,
-                  reminder.checked && styles.reminderItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.reminderText,
-                    reminder.checked && styles.reminderTextChecked,
-                  ]}
-                >
-                  {reminder.text}
-                </Text>
-                <Switch
-                  value={reminder.checked}
-                  onValueChange={() => toggleReminder(reminder.id)}
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Alertas</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardText}>
-              Ha disminuido en un 30% la actividad "no fumar"
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Metas</Text>
-          <View style={styles.card}>
-            {goals.map((goal) => (
-              <View
-                key={goal.id}
-                style={[
-                  styles.goalItem,
-                  goal.checked && styles.goalItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.goalText,
-                    goal.checked && styles.goalTextChecked,
-                  ]}
-                >
-                  {goal.text}
-                </Text>
-                <Switch
-                  value={goal.checked}
-                  onValueChange={() => toggleGoal(goal.id)}
-                />
-              </View>
-            ))}
-          </View>
-          <TouchableOpacity
-            style={styles.newGoalButton}
-            onPress={() => {
-              router.navigate('/habits');
-            }}
-          >
-            <Text style={styles.newGoalText}>Gestionar metas</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Estadísticas</Text>
+      <View style={{ padding: 10 }}>
+        <Text style={styles.sectionTitle}>Medallas</Text>
+        <View style={styles.grid}>{MedalGridMap}</View>
+        <Text style={styles.sectionTitle}>Estadísticas Generales</Text>
+        <ScrollView style={{ maxHeight: 400, padding: 10 }}>
           <View style={styles.card}>
             <TotalCompletedHabitsPieChart data={compresedWeeklyStats} />
-            <Text style={styles.cardText}>15 días sin fumar</Text>
-            <Text style={styles.cardText}>30 horas de ejercicio</Text>
           </View>
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.cardText}>
+              Hábito con mejor highest streak:{' '}
+              {highestStreakHabit ? highestStreakHabit.name : 'No disponible'}
+            </Text>
+            <Text style={styles.cardText}>
+              Número de hábitos interactuados esta semana:{' '}
+              {
+                weeklyStats
+                  .flat()
+                  .filter(
+                    (stat) =>
+                      stat.totalCounter > 0 &&
+                      new Date(stat.startWeek) <= new Date() &&
+                      new Date(stat.endWeek) >= new Date(),
+                  ).length
+              }
+            </Text>
+            <Text style={styles.cardText}>
+              Hábitos sobre el contador esperado:
+              <Text style={{ color: 'blue' }}>
+                {' '}
+                {
+                  weeklyStats
+                    .flat()
+                    .filter(
+                      (stat) =>
+                        stat.totalCounter > stat.expectedCounter &&
+                        new Date(stat.startWeek) <= new Date() &&
+                        new Date(stat.endWeek) >= new Date(),
+                    ).length
+                }
+              </Text>
+            </Text>
+            <Text style={styles.cardText}>
+              Hábitos bajo el contador esperado:
+              <Text style={{ color: 'red' }}>
+                {
+                  weeklyStats
+                    .flat()
+                    .filter(
+                      (stat) =>
+                        stat.totalCounter < stat.expectedCounter &&
+                        new Date(stat.startWeek) <= new Date() &&
+                        new Date(stat.endWeek) >= new Date(),
+                    ).length
+                }
+              </Text>
+            </Text>
+          </View>
+        </ScrollView>
+
+        <Text style={styles.sectionTitle}>Estadísticas de Hábito</Text>
+        <ScrollView style={{ maxHeight: 400, padding: 10 }}>
+          {WeeklyStatsScrollViewWithCarousel}
+        </ScrollView>
       </View>
     </Screen>
   );

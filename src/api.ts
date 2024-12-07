@@ -13,6 +13,8 @@ interface CustomAxiosInstance extends AxiosInstance {
   getHabit: typeof getHabit;
   updateHabit: typeof updateHabit;
   deleteHabit: typeof deleteHabit;
+  getHabitWeeklyStat: typeof getHabitWeeklyStat;
+  getMedals: typeof getMedals;
 }
 
 async function getGreeting() {
@@ -75,5 +77,14 @@ async function deleteHabit({ id }: { id: number }) {
   return (await api.delete('/habit/' + id + '/')).data;
 }
 api.deleteHabit = deleteHabit;
+
+async function getHabitWeeklyStat({ id }: { id: number }) {
+  return (await api.get(`/habit/${id}/weekly/`)).data;
+}
+api.getHabitWeeklyStat = getHabitWeeklyStat;
+
+async function getMedals() {
+  return (await api.get('/medal/')).data;
+}
 
 export default api;
