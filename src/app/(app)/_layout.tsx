@@ -42,6 +42,13 @@ export default function RootLayout() {
           headerTitle: 'Mis Hábitos',
         }}
       />
+      <Drawer.Screen
+        name="stats"
+        options={{
+          drawerLabel: 'Estadísticas',
+          headerTitle: 'Mis Estadísticas',
+        }}
+      />
     </Drawer>
   );
 }

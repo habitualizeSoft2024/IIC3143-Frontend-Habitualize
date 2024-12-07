@@ -15,6 +15,7 @@ interface WeeklyStat {
   totalCounter: number;
   meanStreak: number;
   expectedCounter: number;
+  name: string;
 }
 
 // Ajuste de ancho y alto de gráficos
@@ -30,6 +31,13 @@ export function HabitCounterLineChart({
   habitTitle: string;
 }) {
   const [timeRange, setTimeRange] = useState(data.length); // Rango de tiempo ajustable
+
+  // Ordena en base al inicio de la semana
+  data.sort((a, b) => {
+    if (a.startWeek < b.startWeek) return -1;
+    if (a.startWeek > b.startWeek) return 1;
+    return 0;
+  });
 
   if (data.length === 0) {
     // Mostrar mensaje "Sin información" si no hay datos
@@ -47,64 +55,64 @@ export function HabitCounterLineChart({
         </View>
       </View>
     );
+  } else {
+    const slicedData = data.slice(-timeRange);
+
+    // Obtener las fechas de inicio y fin del rango seleccionado
+    const startDate = formatDate(slicedData[0].startWeek);
+    const endDate = formatDate(slicedData[slicedData.length - 1].endWeek);
+
+    return (
+      <View style={styles.container}>
+        <Text style={styles.header}>{habitTitle}</Text>
+        <Text style={styles.subHeader}>
+          Counter de {timeRange} semana{timeRange === 1 ? '' : 's'}
+        </Text>
+        <LineChart
+          data={{
+            labels: slicedData.map((item) => item.startWeek),
+            datasets: [
+              {
+                data: slicedData.map((item) => item.totalCounter),
+                color: (opacity = 1) => `rgba(34, 139, 230, ${opacity})`,
+                strokeWidth: 2,
+              },
+              {
+                data: slicedData.map((item) => item.expectedCounter),
+                color: (opacity = 1) => `rgba(255, 69, 58, ${opacity})`,
+                strokeWidth: 2,
+              },
+            ],
+            legend: ['Total Counter', 'Expected Counter'],
+          }}
+          width={chartWidth}
+          height={chartHeight}
+          chartConfig={{
+            backgroundColor: '#fffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          }}
+          style={{ marginVertical: 8, borderRadius: 8 }}
+        />
+        <Text style={styles.sliderLabel}>
+          Rango de tiempo: {startDate} a {endDate}
+        </Text>
+        <Slider
+          style={styles.slider}
+          minimumValue={1}
+          maximumValue={data.length}
+          step={1}
+          value={timeRange}
+          onValueChange={(value) => setTimeRange(value)}
+          minimumTrackTintColor="#228be6"
+          maximumTrackTintColor="#d3d3d3"
+        />
+      </View>
+    );
   }
-
-  const slicedData = data.slice(-timeRange);
-
-  // Obtener las fechas de inicio y fin del rango seleccionado
-  const startDate = formatDate(slicedData[0].startWeek);
-  const endDate = formatDate(slicedData[slicedData.length - 1].endWeek);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{habitTitle}</Text>
-      <Text style={styles.subHeader}>
-        Counter de {timeRange} semana{timeRange === 1 ? '' : 's'}
-      </Text>
-      <LineChart
-        data={{
-          labels: slicedData.map((item) => item.startWeek),
-          datasets: [
-            {
-              data: slicedData.map((item) => item.totalCounter),
-              color: (opacity = 1) => `rgba(34, 139, 230, ${opacity})`,
-              strokeWidth: 2,
-            },
-            {
-              data: slicedData.map((item) => item.expectedCounter),
-              color: (opacity = 1) => `rgba(255, 69, 58, ${opacity})`,
-              strokeWidth: 2,
-            },
-          ],
-          legend: ['Total Counter', 'Expected Counter'],
-        }}
-        width={chartWidth}
-        height={chartHeight}
-        chartConfig={{
-          backgroundColor: '#000',
-          backgroundGradientFrom: '#e0f7fa',
-          backgroundGradientTo: '#fffafa',
-          decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        }}
-        style={{ marginVertical: 8, borderRadius: 8 }}
-      />
-      <Text style={styles.sliderLabel}>
-        Rango de tiempo: {startDate} a {endDate}
-      </Text>
-      <Slider
-        style={styles.slider}
-        minimumValue={1}
-        maximumValue={data.length}
-        step={1}
-        value={timeRange}
-        onValueChange={(value) => setTimeRange(value)}
-        minimumTrackTintColor="#228be6"
-        maximumTrackTintColor="#d3d3d3"
-      />
-    </View>
-  );
 }
 
 // Gráfico de pastel con slider y manejo de datos vacíos
@@ -116,6 +124,13 @@ export function HabitCounterCompletion({
   habitTitle: string;
 }) {
   const [timeRange, setTimeRange] = useState(data.length);
+
+  // Ordena en base al inicio de la semana
+  data.sort((a, b) => {
+    if (a.startWeek < b.startWeek) return -1;
+    if (a.startWeek > b.startWeek) return 1;
+    return 0;
+  });
 
   if (data.length === 0) {
     // Mostrar gráfico de pastel gris si no hay datos
@@ -211,6 +226,59 @@ export function HabitCounterCompletion({
   );
 }
 
+// Gráfico de pastel con datos de completitud total de todos los hábitos ingresados
+export function TotalCompletedHabitsPieChart({ data }: { data: WeeklyStat[] }) {
+  const achievedWeeks = data.filter(
+    (item) => item.totalCounter >= item.expectedCounter,
+  ).length;
+  const missedWeeks = data.length - achievedWeeks;
+
+  const pieData = [
+    {
+      name: 'Achieved',
+      population: achievedWeeks,
+      color: 'rgba(34, 139, 230, 1)',
+      legendFontColor: '#000',
+      legendFontSize: 12,
+    },
+    {
+      name: 'Missed',
+      population: missedWeeks,
+      color: 'rgba(255, 69, 58, 1)',
+      legendFontColor: '#000',
+      legendFontSize: 12,
+    },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Habitos con semanas completadas</Text>
+      <Text
+        style={{
+          fontSize: 16,
+          color: '#333',
+          marginBottom: 8,
+        }}
+      >
+        {((achievedWeeks / data.length) * 100).toFixed(2)}% De Los Compromisos
+        Cumplidos
+      </Text>
+      <PieChart
+        data={pieData}
+        width={chartWidth}
+        height={chartHeight}
+        chartConfig={{
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        accessor={'population'}
+        backgroundColor={'transparent'}
+        paddingLeft={'15'}
+        absolute={true}
+      />
+    </View>
+  );
+}
+
 // Datos ficticios
 const mockWeeklyStats: WeeklyStat[] = [
   {
@@ -219,6 +287,7 @@ const mockWeeklyStats: WeeklyStat[] = [
     totalCounter: 10,
     meanStreak: 2,
     expectedCounter: 8,
+    name: 'Lectura',
   },
   {
     startWeek: '2024-01-08',
@@ -226,6 +295,7 @@ const mockWeeklyStats: WeeklyStat[] = [
     totalCounter: 7,
     meanStreak: 3,
     expectedCounter: 8,
+    name: 'Lectura',
   },
   {
     startWeek: '2024-01-15',
@@ -233,6 +303,7 @@ const mockWeeklyStats: WeeklyStat[] = [
     totalCounter: 9,
     meanStreak: 4,
     expectedCounter: 8,
+    name: 'Lectura',
   },
   {
     startWeek: '2024-01-22',
@@ -240,6 +311,7 @@ const mockWeeklyStats: WeeklyStat[] = [
     totalCounter: 8,
     meanStreak: 5,
     expectedCounter: 8,
+    name: 'Lectura',
   },
   {
     startWeek: '2024-01-29',
@@ -247,6 +319,7 @@ const mockWeeklyStats: WeeklyStat[] = [
     totalCounter: 6,
     meanStreak: 3,
     expectedCounter: 8,
+    name: 'Lectura',
   },
 ];
 
@@ -290,6 +363,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
+    paddingTop: 16,
     backgroundColor: '#f7f7f7',
   },
   header: {
@@ -300,6 +374,7 @@ const styles = StyleSheet.create({
   subHeader: {
     fontSize: 16,
     marginVertical: 4,
+    color: '#4A90E2',
   },
   sliderLabel: {
     marginVertical: 4,
