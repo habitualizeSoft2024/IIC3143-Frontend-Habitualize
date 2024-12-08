@@ -90,7 +90,8 @@ async function getHabitWeeklyStat({ id }: { id: number }) {
 api.getHabitWeeklyStat = getHabitWeeklyStat;
 
 async function getMedals() {
-  return (await api.get('/medal/')).data;
+  return (await api.get('user/medals/')).data;
 }
+api.getMedals = getMedals;
 
 export default api;
