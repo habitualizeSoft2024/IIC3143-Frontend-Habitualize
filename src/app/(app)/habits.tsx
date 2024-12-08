@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,7 +11,6 @@ import Screen from '@/components/Screen';
 import { useFocusEffect } from 'expo-router';
 import api from '@/api';
 import Preloader from '@/components/Preloader';
-import { useSession } from '@/contexts/AuthContext';
 import HabitScreenModalForm from '@/components/HabitScreenModalForm';
 
 export default function Habits() {
@@ -18,7 +18,6 @@ export default function Habits() {
   const [selectedHabit, setSelectedHabit] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [refreshHabits, setRefreshHabits] = useState(false);
-  const { logOut } = useSession();
 
   useFocusEffect(
     useCallback(() => {
@@ -26,7 +25,11 @@ export default function Habits() {
         try {
           const habits = await api.getHabits();
           setHabits(habits);
-        } catch {}
+        } catch {
+          window.alert(
+            '¡Oops! Ha ocurrido un error al intentar cargar tus hábitos.',
+          );
+        }
       }
       fetchHabits();
       setRefreshHabits(false);
@@ -40,7 +43,11 @@ export default function Habits() {
         (prevHabits) =>
           prevHabits && prevHabits?.filter((habit: any) => habit.id !== id),
       );
-    } catch {}
+    } catch {
+      window.alert(
+        '¡Oops! Ha ocurrido un error al intentar eliminar el hábito.',
+      );
+    }
   }
 
   if (!habits) {

@@ -13,7 +13,6 @@ import { router } from 'expo-router';
 
 function parseJwt(token: string) {
   try {
-    console.log('🚀 ~ parseJwt: ~ token', token); // Logging for development
     const parts = token.split('.');
 
     if (parts.length !== 3) {
@@ -34,7 +33,6 @@ function parseJwt(token: string) {
     // Decode the Base64Url payload (2nd part of the JWT)
     const decodedPayload = JSON.parse(base64UrlDecode(parts[1]));
 
-    console.log('✨ ~ parseJwt: ~ decodedPayload', decodedPayload); // Logging for development
     return decodedPayload;
   } catch (e) {
     console.error('Error parsing JWT', e);

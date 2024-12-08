@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Screen from '@/components/Screen';
 import { useFocusEffect } from 'expo-router';
 import api from '@/api';
@@ -16,7 +16,11 @@ export default function Profile() {
         try {
           const user = await api.getUser({ id: userId || '' });
           setUser(user);
-        } catch {}
+        } catch {
+          window.alert(
+            '¡Oops! Ha ocurrido un error al intentar cargar tu información.',
+          );
+        }
       }
       fetchUser();
     }, [userId]),

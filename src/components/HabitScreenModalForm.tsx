@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   Modal,
   StyleSheet,
   Text,
@@ -9,7 +10,6 @@ import {
 } from 'react-native';
 import { Formik } from 'formik';
 import api from '@/api';
-import { useSession } from '@/contexts/AuthContext';
 
 export default function HabitScreenModalForm({
   isVisible,
@@ -22,14 +22,16 @@ export default function HabitScreenModalForm({
   selectedHabit?: any;
   setRefreshHabits: (value: boolean) => void;
 }) {
-  const { logOut } = useSession();
-
   async function createHabit(values: any) {
     try {
       await api.createHabit(values);
       setRefreshHabits(true);
       closeModal();
-    } catch {}
+    } catch {
+      window.alert(
+        '¡Oops! Ha ocurrido un error, ¿estás seguro que los datos ingresados son válidos?',
+      );
+    }
   }
 
   async function editHabit(values: any) {
@@ -37,7 +39,12 @@ export default function HabitScreenModalForm({
       await api.updateHabit({ id: selectedHabit.id, ...values });
       setRefreshHabits(true);
       closeModal();
-    } catch {}
+    } catch {
+      console.log('error');
+      window.alert(
+        '¡Oops! Ha ocurrido un error, ¿estás seguro que los datos ingresados son válidos?',
+      );
+    }
   }
 
   return (

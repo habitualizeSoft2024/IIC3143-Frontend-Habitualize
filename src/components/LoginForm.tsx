@@ -17,11 +17,9 @@ export default function LoginForm() {
   const handleLogin = async (values: any) => {
     try {
       await logIn(values);
-    } catch (error) {
-      console.error(error);
-      console.error('Login failed.');
+    } catch {
       setError(
-        '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que tu correo electrónico y contraseña son correctos?',
+        '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que los datos ingresados son correctos?',
       );
     }
   };

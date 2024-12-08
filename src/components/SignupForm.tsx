@@ -17,11 +17,9 @@ export default function SignupForm() {
   const handleSignup = async (values: any) => {
     try {
       await signUp(values);
-    } catch (error) {
-      console.error(error);
-      console.error('Signup failed.');
+    } catch {
       setError(
-        '¡Oops! Registro fallido. ¿Estás seguro que ingresaste un correo electrónico válido?',
+        '¡Oops! Registro fallido. ¿Estás seguro que los datos ingresados son válidos?',
       );
     }
   };

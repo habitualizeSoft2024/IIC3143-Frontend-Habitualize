@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,7 +16,7 @@ import { useSession } from '@/contexts/AuthContext';
 
 export default function Index() {
   const [habits, setHabits] = useState<any[] | null>(null);
-  const { username, logOut } = useSession();
+  const { username } = useSession();
 
   useFocusEffect(
     useCallback(() => {
@@ -23,13 +24,20 @@ export default function Index() {
         try {
           const habits = await api.getHabits();
           setHabits(habits);
-        } catch {}
+        } catch {
+          window.alert(
+            '¡Oops! Ha ocurrido un error al intentar cargar tus hábitos.',
+          );
+        }
       }
       fetchHabits();
     }, []),
   );
 
   async function changeHabitCounter(habit: any, change: number) {
+    if (habit.counter + change < 0) {
+      return;
+    }
     try {
       await api.updateHabit({ id: habit.id, counter: habit.counter + change });
       setHabits(
@@ -41,7 +49,11 @@ export default function Index() {
               : prevHabit,
           ),
       );
-    } catch {}
+    } catch {
+      window.alert(
+        '¡Oops! Ha ocurrido un error al intentar actualizar el contador.',
+      );
+    }
   }
 
   if (!habits) {
