@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Screen from '@/components/Screen';
 import { useFocusEffect } from 'expo-router';
 import api from '@/api';
@@ -42,9 +42,6 @@ export default function Profile() {
           <Text style={styles.infoField}>Correo electrónico: </Text>
           <Text style={styles.info}>{user.email}</Text>
         </View>
-        <TouchableOpacity style={styles.button} onPress={() => {}}>
-          <Text style={styles.buttonText}>Cambiar contraseña</Text>
-        </TouchableOpacity>
       </View>
     </Screen>
   );

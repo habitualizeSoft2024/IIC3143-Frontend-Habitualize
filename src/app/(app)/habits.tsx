@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,7 +31,7 @@ export default function Habits() {
         }
       }
       fetchHabits();
-      setRefreshHabits(false);
+      refreshHabits && setRefreshHabits(false);
     }, [refreshHabits]),
   );
 

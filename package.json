@@ -16,7 +16,8 @@
   "jest": {
     "preset": "jest-expo",
     "coverageReporters": [
-      "text"
+      "text",
+      "lcov"
     ]
   },
   "lint-staged": {
@@ -66,7 +67,7 @@
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/cz-commitlint": "^19.5.0",
-    "@testing-library/react-native": "^12.8.1",
+    "@testing-library/react-native": "^12.9.0",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.2.45",
     "@types/react-test-renderer": "^18.0.7",

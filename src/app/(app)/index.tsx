@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +13,7 @@ import Preloader from '@/components/Preloader';
 import { PieChart } from 'react-native-gifted-charts';
 import { useSession } from '@/contexts/AuthContext';
 
-export default function Index() {
+export default function Home() {
   const [habits, setHabits] = useState<any[] | null>(null);
   const { username } = useSession();
 

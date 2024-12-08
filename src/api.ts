@@ -5,7 +5,6 @@ const api = axios.create({
 }) as CustomAxiosInstance;
 
 interface CustomAxiosInstance extends AxiosInstance {
-  getGreeting: typeof getGreeting;
   logIn: typeof logIn;
   createUser: typeof createUser;
   createHabit: typeof createHabit;
@@ -17,11 +16,6 @@ interface CustomAxiosInstance extends AxiosInstance {
   getHabitWeeklyStat: typeof getHabitWeeklyStat;
   getMedals: typeof getMedals;
 }
-
-async function getGreeting() {
-  return api.get('/hello_world');
-}
-api.getGreeting = getGreeting;
 
 async function logIn(payload: {
   email: string;
@@ -92,5 +86,6 @@ api.getHabitWeeklyStat = getHabitWeeklyStat;
 async function getMedals() {
   return (await api.get('/medal/')).data;
 }
+api.getMedals = getMedals;
 
 export default api;
