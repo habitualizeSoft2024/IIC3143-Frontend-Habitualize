@@ -25,6 +25,7 @@ import {
 } from '@/components/HabitChart';
 import StatCarousel from '@/components/StatCarousel';
 import { ScrollView } from 'react-native-gesture-handler';
+import HabitPickerStats from '@/components/HabitPickerStats';
 
 function transformHabitData(data: HabitRequestData[]): Habit[] {
   return data.map((item) => ({
@@ -177,34 +178,6 @@ export default function Index() {
         }, habits[0])
       : null;
 
-  const WeeklyStatsScrollViewWithCarousel =
-    weeklyStats.length > 0 ? (
-      weeklyStats.map((stats, index) =>
-        stats.length > 0 ? (
-          <View key={index} style={styles.card}>
-            <StatCarousel
-              data={[
-                <HabitCounterCompletion
-                  data={stats}
-                  habitTitle={'Hábito: ' + stats[0].name}
-                />,
-                <HabitCounterLineChart
-                  data={stats}
-                  habitTitle={'Hábito: ' + stats[0].name}
-                />,
-              ]}
-            />
-          </View>
-        ) : (
-          <></>
-        ),
-      )
-    ) : (
-      <View style={styles.card}>
-        <Text>No hay hábitos</Text>
-      </View>
-    );
-
   // Medals
   const [medals, setMedals] = useState<Medal[]>([]);
   async function fetchMedals() {
@@ -301,7 +274,7 @@ export default function Index() {
 
   return (
     <Screen>
-      {InvisibleChart()}
+      {InvisibleChart() /* Sirve para que no se rompa los gráficos */}
       <View style={{ padding: 10 }}>
         <Text style={styles.sectionTitle}>Medallas Obtenidas</Text>
         <View style={styles.grid}>{MedalGridMapArchieved}</View>
@@ -370,9 +343,7 @@ export default function Index() {
         </ScrollView>
 
         <Text style={styles.sectionTitle}>Estadísticas de Hábito</Text>
-        <ScrollView style={{ maxHeight: 400, padding: 10 }}>
-          {WeeklyStatsScrollViewWithCarousel}
-        </ScrollView>
+        <HabitPickerStats habits={habits} />
       </View>
     </Screen>
   );
