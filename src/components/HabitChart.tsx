@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { LineChart, PieChart } from 'react-native-chart-kit';
+import { BarChart, LineChart, PieChart } from 'react-native-chart-kit';
 import Slider from '@react-native-community/slider';
 
 // Formato de fecha para mostrar en el rango
@@ -279,8 +279,207 @@ export function TotalCompletedHabitsPieChart({ data }: { data: WeeklyStat[] }) {
   );
 }
 
+export function HabitCounterBarChart({
+  data,
+  habitTitle,
+}: {
+  data: WeeklyStat[];
+  habitTitle: string;
+}) {
+  const uniqueWeeks = Array.from(new Set(data.map((item) => item.startWeek)));
+  const [timeRange, setTimeRange] = useState(uniqueWeeks.length); // Rango de tiempo ajustable basado en semanas únicas
+
+  // Ordena en base al inicio de la semana
+  data.sort((a, b) => {
+    const dateA = new Date(a.startWeek);
+    const dateB = new Date(b.startWeek);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  if (data.length === 0) {
+    // Mostrar mensaje "Sin información" si no hay datos
+    return (
+      <View style={styles.container}>
+        <Text style={styles.header}>{habitTitle}</Text>
+        <Text style={styles.subHeader}>Sin información disponible</Text>
+        <View
+          style={[
+            styles.emptyChart,
+            { width: chartWidth, height: chartHeight },
+          ]}
+        >
+          <Text style={styles.emptyText}>Sin información</Text>
+        </View>
+      </View>
+    );
+  } else {
+    const slicedData = data;
+    const startDate = formatDate(slicedData[0].startWeek);
+    const endDate = formatDate(slicedData[slicedData.length - 1].endWeek);
+
+    // Agrupar datos por semana y sumar los counters
+    const weeklyData = slicedData.reduce(
+      (acc, item) => {
+        const week = item.startWeek;
+        if (!acc[week]) {
+          acc[week] = 0;
+        }
+        acc[week] += item.totalCounter;
+        return acc;
+      },
+      {} as { [key: string]: number },
+    );
+
+    const labels = Object.keys(weeklyData);
+    const totalCounters = Object.values(weeklyData);
+    const maxCounter = Math.max(...totalCounters);
+
+    return (
+      <View style={styles.container}>
+        <Text style={styles.header}>{habitTitle}</Text>
+        <Text style={styles.subHeader}>
+          Counter de {timeRange} semana{timeRange === 1 ? '' : 's'}
+        </Text>
+        <BarChart
+          data={{
+            labels,
+            datasets: [
+              {
+                data: totalCounters,
+              },
+            ],
+          }}
+          width={chartWidth}
+          height={chartHeight}
+          yAxisLabel="" // Si necesitas un prefijo, como "$" o "n°", añádelo aquí
+          yAxisSuffix="" // Si necesitas un sufijo, como "%", añádelo aquí
+          fromZero={true}
+          yAxisInterval={Math.ceil(maxCounter)} // Ajusta el intervalo del eje Y
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#f7f7f7',
+            backgroundGradientTo: '#ffffff',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(34, 139, 230, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            barPercentage: 0.7, // Ajusta el ancho de las barras
+          }}
+          style={{ marginVertical: 8, borderRadius: 8 }}
+        />
+        <Text style={{ ...styles.sliderLabel, paddingBottom: 10 }}>
+          Estadísticas desde {startDate} a {endDate}
+        </Text>
+      </View>
+    );
+  }
+}
+
+export function MockBarChart() {
+  return <HabitCounterBarChart data={mockTotalStats} habitTitle="Lectura" />;
+}
+
+export function InvisibleChart() {
+  return (
+    <View style={{ width: 0, height: 0 }}>
+      <BarChart
+        data={{
+          labels: [],
+          datasets: [{ data: [] }],
+        }}
+        width={0}
+        height={0}
+        yAxisLabel=""
+        yAxisSuffix=""
+        chartConfig={{
+          backgroundColor: '#ffffff',
+          backgroundGradientFrom: '#ffffff',
+          backgroundGradientTo: '#ffffff',
+          decimalPlaces: 0,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        style={{ marginVertical: 8, borderRadius: 8 }}
+      />
+    </View>
+  );
+}
 // Datos ficticios
 const mockWeeklyStats: WeeklyStat[] = [
+  {
+    startWeek: '2024-01-01',
+    endWeek: '2024-01-07',
+    totalCounter: 10,
+    meanStreak: 2,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-08',
+    endWeek: '2024-01-14',
+    totalCounter: 7,
+    meanStreak: 3,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-15',
+    endWeek: '2024-01-21',
+    totalCounter: 9,
+    meanStreak: 4,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-22',
+    endWeek: '2024-01-28',
+    totalCounter: 8,
+    meanStreak: 5,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-29',
+    endWeek: '2024-02-04',
+    totalCounter: 6,
+    meanStreak: 3,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+];
+
+const mockTotalStats: WeeklyStat[] = [
+  {
+    startWeek: '2024-01-01',
+    endWeek: '2024-01-07',
+    totalCounter: 10,
+    meanStreak: 2,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-08',
+    endWeek: '2024-01-14',
+    totalCounter: 7,
+    meanStreak: 3,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-01',
+    endWeek: '2024-01-07',
+    totalCounter: 10,
+    meanStreak: 2,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
+  {
+    startWeek: '2024-01-08',
+    endWeek: '2024-01-14',
+    totalCounter: 7,
+    meanStreak: 3,
+    expectedCounter: 8,
+    name: 'Lectura',
+  },
   {
     startWeek: '2024-01-01',
     endWeek: '2024-01-07',

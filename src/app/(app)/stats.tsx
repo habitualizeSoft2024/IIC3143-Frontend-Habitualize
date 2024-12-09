@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Dimensions,
+  Image,
   StyleSheet,
   Switch,
   Text,
@@ -12,8 +13,10 @@ import api from '@/api';
 import { router, useFocusEffect } from 'expo-router';
 
 import {
+  HabitCounterBarChart,
   HabitCounterCompletion,
   HabitCounterLineChart,
+  InvisibleChart,
   MockEmptyLineChart,
   MockEmptyPieChart,
   MockLineChart,
@@ -22,6 +25,7 @@ import {
 } from '@/components/HabitChart';
 import StatCarousel from '@/components/StatCarousel';
 import { ScrollView } from 'react-native-gesture-handler';
+import HabitPickerStats from '@/components/HabitPickerStats';
 
 function transformHabitData(data: HabitRequestData[]): Habit[] {
   return data.map((item) => ({
@@ -68,14 +72,43 @@ interface WeeklyStat {
 }
 
 type Medal = {
-  id: number;
   name: string;
-  type: string;
-  level: string | null;
-  description: string;
-  created_at: string;
-  updated_at: string;
+  medal: string;
+  level: string;
+  achieved: boolean;
+  earned_at: string | null;
 };
+
+const MedalMockData: Medal[] = [
+  {
+    name: 'Medalla 1',
+    medal: 'Descripción de la medalla 1',
+    level: 'bronce',
+    achieved: true,
+    earned_at: '2021-10-01',
+  },
+  {
+    name: 'Medalla 2',
+    medal: 'Descripción de la medalla 2',
+    level: 'gold',
+    achieved: false,
+    earned_at: null,
+  },
+  {
+    name: 'Medalla 3',
+    medal: 'Descripción de la medalla 3',
+    level: 'silver',
+    achieved: true,
+    earned_at: '2021-10-02',
+  },
+  {
+    name: 'Medalla 4',
+    medal: 'Descripción de la medalla 4',
+    level: 'gold',
+    achieved: false,
+    earned_at: null,
+  },
+];
 
 export default function Index() {
   // Habits
@@ -145,48 +178,12 @@ export default function Index() {
         }, habits[0])
       : null;
 
-  /* const carouselData = [
-    <MockLineChart />,
-    <MockPieChart />,
-    <MockEmptyLineChart />,
-    <MockEmptyPieChart />
-  ];
-  const WeeklyStatsCarousel = <StatCarousel data={weeklyStats.map((stats, index) => (
-    <View key={index} style={styles.card}>
-      <HabitCounterLineChart data={stats} habitTitle={stats[0].name} />
-      <HabitCounterCompletion data={stats} habitTitle={""} />
-    </View>
-  ))} />;
-
-  const WeeklyStatsScrollView = weeklyStats.map((stats, index) => (
-    <View key={index} style={styles.card}>
-      <HabitCounterLineChart data={stats} habitTitle={stats[0].name} />
-      <HabitCounterCompletion data={stats} habitTitle={""} />
-    </View>
-  )); */
-
-  const WeeklyStatsScrollViewWithCarousel = weeklyStats.map((stats, index) => (
-    <View key={index} style={styles.card}>
-      <StatCarousel
-        data={[
-          <HabitCounterLineChart
-            data={stats}
-            habitTitle={'Hábito: ' + stats[0].name}
-          />,
-          <HabitCounterCompletion
-            data={stats}
-            habitTitle={'Hábito: ' + stats[0].name}
-          />,
-        ]}
-      />
-    </View>
-  ));
-
   // Medals
   const [medals, setMedals] = useState<Medal[]>([]);
   async function fetchMedals() {
     try {
       const response = await api.getMedals();
+      //const response = MedalMockData;
       setMedals(response);
     } catch (error) {
       console.error('Error fetching medals:', error);
@@ -200,13 +197,41 @@ export default function Index() {
     console.log('Medals:', medals);
   }, [medals]);
 
-  const MedalGridMap =
+  const MedalGridMapAchieved =
     medals.length > 0 ? (
       medals.map((medal, index) => (
-        <View key={index} style={styles.section}>
-          <Text style={styles.sectionTitle}>{medal.name}</Text>
-          <Text style={styles.cardText}>{medal.description}</Text>
-        </View>
+        <React.Fragment key={index}>
+          {medal.achieved && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{medal.name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <Image
+                    source={{
+                      uri: `assets/images/${medal.level.toLowerCase()}_default.jpg`,
+                    }}
+                    style={{ width: 100, height: 100 }}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View style={{ flex: 3 }}>
+                  <Text style={styles.cardText}>{medal.medal}</Text>
+                  <Text style={styles.cardText}>Nivel: {medal.level}</Text>
+                  <Text style={styles.cardText}>
+                    Logrado el:{' '}
+                    {medal.earned_at
+                      ? new Date(medal.earned_at).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: '2-digit',
+                        })
+                      : 'No disponible'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+        </React.Fragment>
       ))
     ) : (
       <View
@@ -219,15 +244,64 @@ export default function Index() {
         <Text>No hay medallas</Text>
       </View>
     );
+
+  const MedalGridMapUnachieved =
+    medals.length > 0 ? (
+      medals.map((medal, index) => (
+        <React.Fragment key={index}>
+          {!medal.achieved && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{medal.name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <Image
+                    source={{
+                      uri: `assets/images/${medal.level ? medal.level.toLowerCase() : 'unknown'}_default.jpg`,
+                    }}
+                    style={{ width: 100, height: 100 }}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View style={{ flex: 3 }}>
+                  <Text style={styles.cardText}>{medal.medal}</Text>
+                  <Text style={styles.cardText}>
+                    Nivel:{' '}
+                    {medal.level ? medal.level.toLowerCase() : 'Desconocido'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+        </React.Fragment>
+      ))
+    ) : (
+      <View
+        style={{
+          ...styles.section,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text>No hay medallas</Text>
+      </View>
+    );
+
   return (
     <Screen>
+      {InvisibleChart() /* Sirve para que no se rompa los gráficos */}
       <View style={{ padding: 10 }}>
-        <Text style={styles.sectionTitle}>Medallas</Text>
-        <View style={styles.grid}>{MedalGridMap}</View>
+        <Text style={styles.sectionTitle}>Medallas Obtenidas</Text>
+        <View style={styles.grid}>{MedalGridMapAchieved}</View>
+        <Text style={styles.sectionTitle}>Medallas por Lograr</Text>
+        <View style={styles.grid}>{MedalGridMapUnachieved}</View>
         <Text style={styles.sectionTitle}>Estadísticas Generales</Text>
         <ScrollView style={{ maxHeight: 400, padding: 10 }}>
           <View style={styles.card}>
             <TotalCompletedHabitsPieChart data={compresedWeeklyStats} />
+            <HabitCounterBarChart
+              data={compresedWeeklyStats}
+              habitTitle="Counter total semanal"
+            />
           </View>
           <View style={styles.card}>
             <Text style={styles.cardText}>
@@ -256,7 +330,7 @@ export default function Index() {
                     .flat()
                     .filter(
                       (stat) =>
-                        stat.totalCounter > stat.expectedCounter &&
+                        stat.totalCounter >= stat.expectedCounter &&
                         new Date(stat.startWeek) <= new Date() &&
                         new Date(stat.endWeek) >= new Date(),
                     ).length
@@ -266,6 +340,7 @@ export default function Index() {
             <Text style={styles.cardText}>
               Hábitos bajo el contador esperado:
               <Text style={{ color: 'red' }}>
+                {' '}
                 {
                   weeklyStats
                     .flat()
@@ -282,9 +357,7 @@ export default function Index() {
         </ScrollView>
 
         <Text style={styles.sectionTitle}>Estadísticas de Hábito</Text>
-        <ScrollView style={{ maxHeight: 400, padding: 10 }}>
-          {WeeklyStatsScrollViewWithCarousel}
-        </ScrollView>
+        <HabitPickerStats habits={habits} />
       </View>
     </Screen>
   );
@@ -326,7 +399,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: '#4ab7bd',
     borderWidth: 2,
-    backgroundColor: '#E0F7FA',
+    backgroundColor: '#FFFFFF',
   },
   sectionTitle: {
     fontSize: 18,

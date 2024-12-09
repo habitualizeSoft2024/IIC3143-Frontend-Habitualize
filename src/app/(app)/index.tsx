@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -13,9 +13,64 @@ import Preloader from '@/components/Preloader';
 import { PieChart } from 'react-native-gifted-charts';
 import { useSession } from '@/contexts/AuthContext';
 
+interface WeeklyStat {
+  startWeek: string;
+  endWeek: string;
+  totalCounter: number;
+  meanStreak: number;
+  expectedCounter: number;
+  name: string;
+}
+
 export default function Home() {
   const [habits, setHabits] = useState<any[] | null>(null);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStat[][]>([]);
+  const [achievedWeeks, setAchievedWeeks] = useState(0);
+  const [missedWeeks, setMissedWeeks] = useState(0);
   const { username } = useSession();
+
+  async function fetchWeeklyStats() {
+    try {
+      const statsPromises = habits?.map(async (habit) => {
+        const response = await api.getHabitWeeklyStat({ id: +habit.id });
+
+        let habitWeeklyStat: WeeklyStat[] = response.map(
+          (item: any): WeeklyStat => {
+            return {
+              startWeek: item.week_start,
+              endWeek: item.week_end,
+              totalCounter: item.total_counter,
+              meanStreak: item.mean_streak,
+              expectedCounter: item.expected_counter,
+              name: habit.name,
+            };
+          },
+        );
+        return habitWeeklyStat;
+      });
+      const stats = statsPromises ? await Promise.all(statsPromises) : [];
+      setWeeklyStats(stats);
+      calculateAchievedAndMissedWeeks(stats);
+    } catch (error) {
+      console.error('Error fetching weekly stats:', error);
+    }
+  }
+
+  function calculateAchievedAndMissedWeeks(stats: WeeklyStat[][]) {
+    const allStats = stats.flat();
+    const achieved = allStats.filter(
+      (item) => item.totalCounter >= item.expectedCounter,
+    ).length;
+    const missed = allStats.length - achieved;
+    setAchievedWeeks(achieved);
+    setMissedWeeks(missed);
+  }
+
+  useEffect(() => {
+    if (habits && habits.length > 0) {
+      fetchWeeklyStats();
+    }
+  }, [habits]);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +130,17 @@ export default function Home() {
     );
   }
 
+  const allStats = weeklyStats.flat();
+  const highestStreakHabit =
+    habits.length > 0
+      ? habits.reduce((acc, habit) => {
+          if (habit.highest_streak > acc.highest_streak) {
+            return habit;
+          }
+          return acc;
+        }, habits[0])
+      : null;
+
   return (
     <Screen>
       <Text style={styles.greetingText}>{`¡Hola, ${username}!`}</Text>
@@ -128,13 +194,70 @@ export default function Home() {
               donut={true}
               innerRadius={80}
               data={[
-                { value: 70, color: '#56A0E6' },
-                { value: 30, color: 'black' },
+                { value: achievedWeeks, color: '#56A0E6' },
+                { value: missedWeeks, color: 'black' },
               ]}
               centerLabelComponent={() => {
-                return <Text style={styles.chartText}>70%</Text>;
+                const totalWeeks = achievedWeeks + missedWeeks;
+                const percentage =
+                  totalWeeks > 0 ? (achievedWeeks / totalWeeks) * 100 : 0;
+                return (
+                  <Text style={styles.chartText}>{percentage.toFixed(2)}%</Text>
+                );
               }}
             />
+
+            <View style={styles.card}>
+              <Text style={styles.cardText}>
+                Hábito con mejor highest streak:{' '}
+                {highestStreakHabit ? highestStreakHabit.name : 'No disponible'}
+              </Text>
+              <Text style={styles.cardText}>
+                Número de hábitos interactuados esta semana:{' '}
+                {
+                  weeklyStats
+                    .flat()
+                    .filter(
+                      (stat) =>
+                        stat.totalCounter > 0 &&
+                        new Date(stat.startWeek) <= new Date() &&
+                        new Date(stat.endWeek) >= new Date(),
+                    ).length
+                }
+              </Text>
+              <Text style={styles.cardText}>
+                Hábitos sobre el contador esperado:
+                <Text style={{ color: 'blue' }}>
+                  {' '}
+                  {
+                    weeklyStats
+                      .flat()
+                      .filter(
+                        (stat) =>
+                          stat.totalCounter >= stat.expectedCounter &&
+                          new Date(stat.startWeek) <= new Date() &&
+                          new Date(stat.endWeek) >= new Date(),
+                      ).length
+                  }
+                </Text>
+              </Text>
+              <Text style={styles.cardText}>
+                Hábitos bajo el contador esperado:
+                <Text style={{ color: 'red' }}>
+                  {' '}
+                  {
+                    weeklyStats
+                      .flat()
+                      .filter(
+                        (stat) =>
+                          stat.totalCounter < stat.expectedCounter &&
+                          new Date(stat.startWeek) <= new Date() &&
+                          new Date(stat.endWeek) >= new Date(),
+                      ).length
+                  }
+                </Text>
+              </Text>
+            </View>
             <TouchableOpacity
               style={styles.manageHabits}
               onPress={() => {
@@ -250,5 +373,20 @@ const styles = StyleSheet.create({
   chartText: {
     fontSize: 40,
     fontWeight: 'bold',
+  },
+  card: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardText: {
+    fontSize: 14,
+    marginBottom: 10,
   },
 });
