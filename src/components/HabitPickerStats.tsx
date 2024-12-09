@@ -38,7 +38,6 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
 
   // Manejar selección del hábito y obtener estadísticas
   const handleHabitSelect = async (habitId: string) => {
-    const habit = habits.find((h) => h.habit_id === habitId);
     setSelectedHabit(habitId);
     setLoading(true);
     try {
@@ -53,7 +52,7 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
             totalCounter: item.total_counter,
             meanStreak: item.mean_streak,
             expectedCounter: item.expected_counter,
-            name: habit?.name || '',
+            name: '',
           };
         },
       );
@@ -89,14 +88,8 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
         <ActivityIndicator size="large" color="#4ab7bd" />
       ) : habitStats ? (
         <View style={styles.card}>
-          <HabitCounterCompletion
-            data={habitStats}
-            habitTitle={`Hábito: ${habitStats.name}`}
-          />
-          <HabitCounterLineChart
-            data={habitStats}
-            habitTitle={`Hábito: ${habitStats.name}`}
-          />
+          <HabitCounterCompletion data={habitStats} habitTitle={``} />
+          <HabitCounterLineChart data={habitStats} habitTitle={``} />
         </View>
       ) : (
         selectedHabit && (
