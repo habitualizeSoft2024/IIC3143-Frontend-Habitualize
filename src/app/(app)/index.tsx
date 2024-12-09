@@ -51,9 +51,7 @@ export default function Home() {
       const stats = statsPromises ? await Promise.all(statsPromises) : [];
       setWeeklyStats(stats);
       calculateAchievedAndMissedWeeks(stats);
-    } catch (error) {
-      console.error('Error fetching weekly stats:', error);
-    }
+    } catch {}
   }
 
   function calculateAchievedAndMissedWeeks(stats: WeeklyStat[][]) {
