@@ -17,11 +17,9 @@ export default function SignupForm() {
   const handleSignup = async (values: any) => {
     try {
       await signUp(values);
-    } catch (error) {
-      console.error(error);
-      console.error('Signup failed.');
+    } catch {
       setError(
-        '¡Oops! Registro fallido. ¿Estás seguro que ingresaste un correo electrónico válido?',
+        '¡Oops! Registro fallido. ¿Estás seguro que los datos ingresados son válidos?',
       );
     }
   };
@@ -71,7 +69,10 @@ export default function SignupForm() {
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
               <TouchableOpacity onPress={() => router.navigate('/login')}>
-                <Text style={styles.link}>¿Ya te encuentras registrado?</Text>
+                <Text style={styles.link}>
+                  ¿Ya te encuentras registrado? ¡Haz click aquí para iniciar
+                  sesión!
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

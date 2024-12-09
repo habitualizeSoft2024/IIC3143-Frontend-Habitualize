@@ -1,122 +1,269 @@
-import React, { useState } from 'react';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Screen from '@/components/Screen';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import api from '@/api';
+import Preloader from '@/components/Preloader';
+import { PieChart } from 'react-native-gifted-charts';
+import { useSession } from '@/contexts/AuthContext';
 
-export default function Index() {
-  const [goals, setGoals] = useState([
-    { id: 1, text: 'No fumar', checked: false },
-    { id: 2, text: 'Ir al gimnasio', checked: false },
-    { id: 3, text: 'No morder uñas', checked: false },
-    { id: 4, text: 'Comer verduras', checked: false },
-  ]);
+interface WeeklyStat {
+  startWeek: string;
+  endWeek: string;
+  totalCounter: number;
+  meanStreak: number;
+  expectedCounter: number;
+  name: string;
+}
 
-  const [reminders, setReminders] = useState([
-    { id: 1, text: 'Pagar suscripción de gym', checked: false },
-    { id: 2, text: 'Comprar suplementos', checked: false },
-  ]);
+export default function Home() {
+  const [habits, setHabits] = useState<any[] | null>(null);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStat[][]>([]);
+  const [achievedWeeks, setAchievedWeeks] = useState(0);
+  const [missedWeeks, setMissedWeeks] = useState(0);
+  const { username } = useSession();
 
-  const toggleGoal = (id: number) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) =>
-        goal.id === id ? { ...goal, checked: !goal.checked } : goal,
-      ),
+  async function fetchWeeklyStats() {
+    try {
+      const statsPromises = habits?.map(async (habit) => {
+        const response = await api.getHabitWeeklyStat({ id: +habit.id });
+
+        let habitWeeklyStat: WeeklyStat[] = response.map(
+          (item: any): WeeklyStat => {
+            return {
+              startWeek: item.week_start,
+              endWeek: item.week_end,
+              totalCounter: item.total_counter,
+              meanStreak: item.mean_streak,
+              expectedCounter: item.expected_counter,
+              name: habit.name,
+            };
+          },
+        );
+        return habitWeeklyStat;
+      });
+      const stats = statsPromises ? await Promise.all(statsPromises) : [];
+      setWeeklyStats(stats);
+      calculateAchievedAndMissedWeeks(stats);
+    } catch {}
+  }
+
+  function calculateAchievedAndMissedWeeks(stats: WeeklyStat[][]) {
+    const allStats = stats.flat();
+    const achieved = allStats.filter(
+      (item) => item.totalCounter >= item.expectedCounter,
+    ).length;
+    const missed = allStats.length - achieved;
+    setAchievedWeeks(achieved);
+    setMissedWeeks(missed);
+  }
+
+  useEffect(() => {
+    if (habits && habits.length > 0) {
+      fetchWeeklyStats();
+    }
+  }, [habits]);
+
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchHabits() {
+        try {
+          const habits = await api.getHabits();
+          setHabits(habits);
+        } catch {
+          window.alert(
+            '¡Oops! Ha ocurrido un error al intentar cargar tus hábitos.',
+          );
+        }
+      }
+      fetchHabits();
+    }, []),
+  );
+
+  async function changeHabitCounter(habit: any, change: number) {
+    if (habit.counter + change < 0) {
+      return;
+    }
+    try {
+      await api.updateHabit({ id: habit.id, counter: habit.counter + change });
+      setHabits(
+        (prevHabits) =>
+          prevHabits &&
+          prevHabits.map((prevHabit) =>
+            prevHabit.id === habit.id
+              ? { ...prevHabit, counter: prevHabit.counter + change }
+              : prevHabit,
+          ),
+      );
+    } catch {
+      window.alert(
+        '¡Oops! Ha ocurrido un error al intentar actualizar el contador.',
+      );
+    }
+  }
+
+  if (!habits) {
+    return <Preloader />;
+  }
+
+  if (habits.length === 0) {
+    return (
+      <Screen>
+        <Text style={styles.greetingText}>{`¡Hola, ${username}!`}</Text>
+        <TouchableOpacity
+          style={styles.manageHabits}
+          onPress={() => {
+            router.navigate('/habits');
+          }}
+        >
+          <Text style={styles.manageHabitsText}>Gestionar hábitos</Text>
+        </TouchableOpacity>
+      </Screen>
     );
-  };
+  }
 
-  const toggleReminder = (id: number) => {
-    setReminders((prevReminders) =>
-      prevReminders.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, checked: !reminder.checked }
-          : reminder,
-      ),
-    );
-  };
+  const allStats = weeklyStats.flat();
+  const highestStreakHabit =
+    habits.length > 0
+      ? habits.reduce((acc, habit) => {
+          if (habit.highest_streak > acc.highest_streak) {
+            return habit;
+          }
+          return acc;
+        }, habits[0])
+      : null;
 
   return (
     <Screen>
-      <Text style={styles.greetingText}>{'Bienvenid@ de vuelta'}</Text>
-      <View style={styles.grid}>
+      <Text style={styles.greetingText}>{`¡Hola, ${username}!`}</Text>
+      <View style={styles.container}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recordatorios</Text>
-          <View style={styles.card}>
-            {reminders.map((reminder) => (
-              <View
-                key={reminder.id}
-                style={[
-                  styles.reminderItem,
-                  reminder.checked && styles.reminderItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.reminderText,
-                    reminder.checked && styles.reminderTextChecked,
-                  ]}
-                >
-                  {reminder.text}
-                </Text>
-                <Switch
-                  value={reminder.checked}
-                  onValueChange={() => toggleReminder(reminder.id)}
-                />
+          <Text style={styles.sectionTitle}>Hábitos</Text>
+          <ScrollView style={styles.habits}>
+            {habits.map((habit: any, index) => (
+              <View key={index} style={styles.habitContainer}>
+                <View style={styles.row}>
+                  <View>
+                    <Text style={styles.habitName}>{habit.name}</Text>
+                    <Text style={styles.habitInfo}>
+                      Contador: {habit.counter}
+                    </Text>
+                  </View>
+
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={styles.counterButton}
+                      onPress={() => changeHabitCounter(habit, -1)}
+                    >
+                      <Text style={styles.counterButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.counterButton}
+                      onPress={() => changeHabitCounter(habit, 1)}
+                    >
+                      <Text style={styles.counterButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Alertas</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardText}>
-              Ha disminuido en un 30% la actividad "no fumar"
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Metas</Text>
-          <View style={styles.card}>
-            {goals.map((goal) => (
-              <View
-                key={goal.id}
-                style={[
-                  styles.goalItem,
-                  goal.checked && styles.goalItemChecked,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.goalText,
-                    goal.checked && styles.goalTextChecked,
-                  ]}
-                >
-                  {goal.text}
-                </Text>
-                <Switch
-                  value={goal.checked}
-                  onValueChange={() => toggleGoal(goal.id)}
-                />
-              </View>
-            ))}
-          </View>
+          </ScrollView>
           <TouchableOpacity
-            style={styles.newGoalButton}
+            style={styles.manageHabits}
             onPress={() => {
               router.navigate('/habits');
             }}
           >
-            <Text style={styles.newGoalText}>Gestionar metas</Text>
+            <Text style={styles.manageHabitsText}>Gestionar hábitos</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Estadísticas</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardText}>87% Compromisos Cumplidos</Text>
-            <Text style={styles.cardText}>15 días sin fumar</Text>
-            <Text style={styles.cardText}>30 horas de ejercicio</Text>
+          <View style={styles.chart}>
+            <Text style={styles.charTitle}>Compromisos cumplidos</Text>
+            <PieChart
+              donut={true}
+              innerRadius={80}
+              data={[
+                { value: achievedWeeks, color: '#56A0E6' },
+                { value: missedWeeks, color: 'black' },
+              ]}
+              centerLabelComponent={() => {
+                const totalWeeks = achievedWeeks + missedWeeks;
+                const percentage =
+                  totalWeeks > 0 ? (achievedWeeks / totalWeeks) * 100 : 0;
+                return (
+                  <Text style={styles.chartText}>{percentage.toFixed(2)}%</Text>
+                );
+              }}
+            />
+
+            <View style={styles.card}>
+              <Text style={styles.cardText}>
+                Hábito con mejor highest streak:{' '}
+                {highestStreakHabit ? highestStreakHabit.name : 'No disponible'}
+              </Text>
+              <Text style={styles.cardText}>
+                Número de hábitos interactuados esta semana:{' '}
+                {
+                  weeklyStats
+                    .flat()
+                    .filter(
+                      (stat) =>
+                        stat.totalCounter > 0 &&
+                        new Date(stat.startWeek) <= new Date() &&
+                        new Date(stat.endWeek) >= new Date(),
+                    ).length
+                }
+              </Text>
+              <Text style={styles.cardText}>
+                Hábitos sobre el contador esperado:
+                <Text style={{ color: 'blue' }}>
+                  {' '}
+                  {
+                    weeklyStats
+                      .flat()
+                      .filter(
+                        (stat) =>
+                          stat.totalCounter >= stat.expectedCounter &&
+                          new Date(stat.startWeek) <= new Date() &&
+                          new Date(stat.endWeek) >= new Date(),
+                      ).length
+                  }
+                </Text>
+              </Text>
+              <Text style={styles.cardText}>
+                Hábitos bajo el contador esperado:
+                <Text style={{ color: 'red' }}>
+                  {' '}
+                  {
+                    weeklyStats
+                      .flat()
+                      .filter(
+                        (stat) =>
+                          stat.totalCounter < stat.expectedCounter &&
+                          new Date(stat.startWeek) <= new Date() &&
+                          new Date(stat.endWeek) >= new Date(),
+                      ).length
+                  }
+                </Text>
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.manageHabits}
+              onPress={() => {
+                router.navigate('/stats');
+              }}
+            >
+              <Text style={styles.manageHabitsText}>Ver más</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -125,112 +272,119 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#F5F9FC',
-  },
   greetingText: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#4a4a4a',
     textAlign: 'center',
     marginBottom: 20,
   },
-  userText: {
-    fontSize: 16,
-    color: '#4a4a4a',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  tokenText: {
-    fontSize: 14,
-    color: '#6b6b6b',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  grid: {
+  container: {
+    flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 20,
+    maxHeight: 700,
   },
   section: {
-    width: '48%',
-    marginBottom: 20,
+    flex: 1,
     borderRadius: 10,
     borderColor: '#4ab7bd',
+    backgroundColor: '#ffffff',
     borderWidth: 2,
-    backgroundColor: '#E0F7FA',
+    padding: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+  habits: {
+    borderWidth: 2,
+    borderColor: 'black',
+    borderRadius: 10,
     padding: 10,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    padding: 15,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    borderTopRightRadius: 8,
-    borderTopLeftRadius: 8,
+  habitContainer: {
+    padding: 20,
+    borderRadius: 8,
+    backgroundColor: '#BBE8FE',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    marginBottom: 10,
   },
-  cardText: {
-    fontSize: 16,
+  habitName: {
+    fontSize: 30,
+    fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  reminderItem: {
+  habitInfo: {
+    fontSize: 25,
+    color: '#333',
+    marginBottom: 5,
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 5,
   },
-  reminderItemChecked: {
-    backgroundColor: '#E0F7FA',
-    opacity: 0.6,
-    borderRadius: 5,
-    paddingHorizontal: 5,
-  },
-  reminderText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  reminderTextChecked: {
-    color: '#888',
-    textDecorationLine: 'line-through',
-  },
-  goalItem: {
-    flexDirection: 'row',
+  chart: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
+    justifyContent: 'center',
+    height: '80%',
+    width: '100%',
+    gap: 20,
+    padding: 20,
   },
-  goalItemChecked: {
-    backgroundColor: '#E0F7FA',
-    opacity: 0.6,
-    borderRadius: 5,
-    paddingHorizontal: 5,
-  },
-  goalText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  goalTextChecked: {
-    color: '#888',
-    textDecorationLine: 'line-through',
-  },
-  newGoalButton: {
-    marginTop: 10,
-    backgroundColor: '#4ab7bd',
+  counterButton: {
+    backgroundColor: 'black',
+    width: 50,
+    height: 50,
+    margin: 5,
     padding: 10,
+    borderRadius: 5,
     alignItems: 'center',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
   },
-  newGoalText: {
+  counterButtonText: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 30,
+    marginTop: -5,
+  },
+  sectionTitle: {
+    fontSize: 40,
+    fontWeight: '600',
+    color: '#333',
+    padding: 20,
+  },
+  manageHabits: {
+    marginTop: 10,
+    backgroundColor: '#4ab7bd',
+    padding: 20,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  manageHabitsText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  charTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  chartText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  card: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardText: {
+    fontSize: 14,
+    marginBottom: 10,
   },
 });
