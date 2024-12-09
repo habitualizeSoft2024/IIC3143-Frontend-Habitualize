@@ -73,39 +73,39 @@ interface WeeklyStat {
 
 type Medal = {
   name: string;
-  description: string;
+  medal: string;
   level: string;
-  archieved: boolean;
+  achieved: boolean;
   earned_at: string | null;
 };
 
 const MedalMockData: Medal[] = [
   {
     name: 'Medalla 1',
-    description: 'Descripción de la medalla 1',
+    medal: 'Descripción de la medalla 1',
     level: 'bronce',
-    archieved: true,
+    achieved: true,
     earned_at: '2021-10-01',
   },
   {
     name: 'Medalla 2',
-    description: 'Descripción de la medalla 2',
+    medal: 'Descripción de la medalla 2',
     level: 'gold',
-    archieved: false,
+    achieved: false,
     earned_at: null,
   },
   {
     name: 'Medalla 3',
-    description: 'Descripción de la medalla 3',
+    medal: 'Descripción de la medalla 3',
     level: 'silver',
-    archieved: true,
+    achieved: true,
     earned_at: '2021-10-02',
   },
   {
     name: 'Medalla 4',
-    description: 'Descripción de la medalla 4',
+    medal: 'Descripción de la medalla 4',
     level: 'gold',
-    archieved: false,
+    achieved: false,
     earned_at: null,
   },
 ];
@@ -197,26 +197,35 @@ export default function Index() {
     console.log('Medals:', medals);
   }, [medals]);
 
-  const MedalGridMapArchieved =
+  const MedalGridMapAchieved =
     medals.length > 0 ? (
       medals.map((medal, index) => (
         <React.Fragment key={index}>
-          {medal.archieved && (
+          {medal.achieved && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{medal.name}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
                   <Image
-                    source={{ uri: `assets/images/${medal.level}_default.jpg` }}
+                    source={{
+                      uri: `assets/images/${medal.level.toLowerCase()}_default.jpg`,
+                    }}
                     style={{ width: 100, height: 100 }}
                     resizeMode="cover"
                   />
                 </View>
                 <View style={{ flex: 3 }}>
-                  <Text style={styles.cardText}>{medal.description}</Text>
+                  <Text style={styles.cardText}>{medal.medal}</Text>
                   <Text style={styles.cardText}>Nivel: {medal.level}</Text>
                   <Text style={styles.cardText}>
-                    Logrado el: {medal.earned_at}
+                    Logrado el:{' '}
+                    {medal.earned_at
+                      ? new Date(medal.earned_at).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: '2-digit',
+                        })
+                      : 'No disponible'}
                   </Text>
                 </View>
               </View>
@@ -236,24 +245,29 @@ export default function Index() {
       </View>
     );
 
-  const MedalGridMapUnarchieved =
+  const MedalGridMapUnachieved =
     medals.length > 0 ? (
       medals.map((medal, index) => (
         <React.Fragment key={index}>
-          {!medal.archieved && (
+          {!medal.achieved && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{medal.name}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
                   <Image
-                    source={{ uri: `assets/images/${medal.level}_default.jpg` }}
+                    source={{
+                      uri: `assets/images/${medal.level ? medal.level.toLowerCase() : 'unknown'}_default.jpg`,
+                    }}
                     style={{ width: 100, height: 100 }}
                     resizeMode="cover"
                   />
                 </View>
                 <View style={{ flex: 3 }}>
-                  <Text style={styles.cardText}>{medal.description}</Text>
-                  <Text style={styles.cardText}>Nivel: {medal.level}</Text>
+                  <Text style={styles.cardText}>{medal.medal}</Text>
+                  <Text style={styles.cardText}>
+                    Nivel:{' '}
+                    {medal.level ? medal.level.toLowerCase() : 'Desconocido'}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -277,9 +291,9 @@ export default function Index() {
       {InvisibleChart() /* Sirve para que no se rompa los gráficos */}
       <View style={{ padding: 10 }}>
         <Text style={styles.sectionTitle}>Medallas Obtenidas</Text>
-        <View style={styles.grid}>{MedalGridMapArchieved}</View>
+        <View style={styles.grid}>{MedalGridMapAchieved}</View>
         <Text style={styles.sectionTitle}>Medallas por Lograr</Text>
-        <View style={styles.grid}>{MedalGridMapUnarchieved}</View>
+        <View style={styles.grid}>{MedalGridMapUnachieved}</View>
         <Text style={styles.sectionTitle}>Estadísticas Generales</Text>
         <ScrollView style={{ maxHeight: 400, padding: 10 }}>
           <View style={styles.card}>
