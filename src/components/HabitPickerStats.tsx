@@ -31,7 +31,7 @@ interface WeeklyStat {
 }
 
 export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
-  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [habitStats, setHabitStats] = useState<any>(null);
 
