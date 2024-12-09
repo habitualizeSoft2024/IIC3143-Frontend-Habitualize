@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -7,7 +7,6 @@ import {
   View,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
 import { HabitCounterCompletion, HabitCounterLineChart } from './HabitChart';
 import api from '@/api';
 
@@ -40,29 +39,31 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
   const handleHabitSelect = async (habitId: string) => {
     setSelectedHabit(habitId);
     setLoading(true);
-    try {
-      console.log('Estadísticas del hábito:', habitId);
-      const response = await api.getHabitWeeklyStat({ id: +habitId });
+    if (habitId) {
+      try {
+        console.log('Estadísticas del hábito:', habitId);
+        const response = await api.getHabitWeeklyStat({ id: +habitId });
 
-      let habitWeeklyStat: WeeklyStat[] = response.map(
-        (item: any): WeeklyStat => {
-          return {
-            startWeek: item.week_start,
-            endWeek: item.week_end,
-            totalCounter: item.total_counter,
-            meanStreak: item.mean_streak,
-            expectedCounter: item.expected_counter,
-            name: '',
-          };
-        },
-      );
-      await setHabitStats(habitWeeklyStat);
-      console.log('Estadísticas del hábito:', response);
-    } catch (error) {
-      console.error('Error al obtener las estadísticas del hábito:', error);
-    } finally {
-      setLoading(false);
+        let habitWeeklyStat: WeeklyStat[] = response.map(
+          (item: any): WeeklyStat => {
+            return {
+              startWeek: item.week_start,
+              endWeek: item.week_end,
+              totalCounter: item.total_counter,
+              meanStreak: item.mean_streak,
+              expectedCounter: item.expected_counter,
+              name: item.name,
+            };
+          },
+        );
+
+        setHabitStats(habitWeeklyStat);
+        console.log('Estadísticas del hábito:', response);
+      } catch (error) {
+        console.error('Error al obtener las estadísticas del hábito:', error);
+      }
     }
+    setLoading(false);
   };
 
   return (
@@ -71,11 +72,11 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
         Selecciona un hábito para ver estadísticas:
       </Text>
       <Picker
-        selectedValue={selectedHabit}
+        selectedValue={selectedHabit as any}
         onValueChange={(value: string) => handleHabitSelect(value)}
         style={styles.picker}
       >
-        <Picker.Item label="Seleccionar..." value={null} />
+        <Picker.Item label="Seleccionar..." value={''} />
         {habits.map((habit) => (
           <Picker.Item
             key={habit.habit_id}
@@ -88,8 +89,20 @@ export default function HabitPickerStats({ habits }: { habits: Habit[] }) {
         <ActivityIndicator size="large" color="#4ab7bd" />
       ) : habitStats ? (
         <View style={styles.card}>
-          <HabitCounterCompletion data={habitStats} habitTitle={``} />
-          <HabitCounterLineChart data={habitStats} habitTitle={``} />
+          <HabitCounterCompletion
+            data={habitStats}
+            habitTitle={
+              habits.find((habit) => habit.habit_id === selectedHabit)?.name ||
+              ''
+            }
+          />
+          <HabitCounterLineChart
+            data={habitStats}
+            habitTitle={
+              habits.find((habit) => habit.habit_id === selectedHabit)?.name ||
+              ''
+            }
+          />
         </View>
       ) : (
         selectedHabit && (
@@ -113,7 +126,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4a4a4a',
     textAlign: 'center',
-    marginBottom: 20,
   },
   userText: {
     fontSize: 16,
@@ -212,7 +224,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   picker: {
-    marginVertical: 10,
+    fontSize: 25,
+    width: 250,
+    alignSelf: 'center',
+    marginVertical: 20,
     backgroundColor: '#FFFFFF',
     borderColor: '#4ab7bd',
     borderWidth: 2,
