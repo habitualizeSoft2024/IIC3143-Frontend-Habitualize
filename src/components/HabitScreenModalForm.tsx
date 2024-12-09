@@ -8,35 +8,44 @@ import {
   View,
 } from 'react-native';
 import { Formik } from 'formik';
-
-type Habit = {
-  habit_id: string;
-  user_id: string;
-  name: string;
-  description: string;
-  counter: number;
-  current_streak: number;
-  highest_streak: number;
-  expected_counter: number;
-};
-
-interface HabitScreenModalFormProps {
-  isVisible: boolean;
-  closeModal: () => void;
-  isEditing: boolean;
-  selectedHabit?: Habit | null;
-  createHabit: (values: any) => void;
-  updateHabit: (values: any) => void;
-}
+import api from '@/api';
 
 export default function HabitScreenModalForm({
   isVisible,
   closeModal,
-  isEditing,
   selectedHabit,
-  createHabit,
-  updateHabit,
-}: HabitScreenModalFormProps) {
+  setRefreshHabits,
+}: {
+  isVisible: boolean;
+  closeModal: () => void;
+  selectedHabit?: any;
+  setRefreshHabits: (value: boolean) => void;
+}) {
+  async function createHabit(values: any) {
+    try {
+      await api.createHabit(values);
+      setRefreshHabits(true);
+      closeModal();
+    } catch {
+      window.alert(
+        '¡Oops! Ha ocurrido un error, ¿estás seguro que los datos ingresados son válidos?',
+      );
+    }
+  }
+
+  async function editHabit(values: any) {
+    try {
+      await api.updateHabit({ id: selectedHabit.id, ...values });
+      setRefreshHabits(true);
+      closeModal();
+    } catch {
+      console.log('error');
+      window.alert(
+        '¡Oops! Ha ocurrido un error, ¿estás seguro que los datos ingresados son válidos?',
+      );
+    }
+  }
+
   return (
     <Modal
       visible={isVisible}
@@ -46,25 +55,24 @@ export default function HabitScreenModalForm({
     >
       <View style={styles.modalBackground}>
         <Formik
-          initialValues={
-            isEditing
-              ? {
-                  name: selectedHabit?.name || '',
-                  description: selectedHabit?.description || '',
-                  expected_counter:
-                    selectedHabit?.expected_counter.toString() || '',
-                }
-              : {
-                  name: '',
-                  description: '',
-                  expected_counter: '',
-                }
-          }
-          onSubmit={isEditing ? updateHabit : createHabit}
+          initialValues={{
+            name: selectedHabit?.name || '',
+            description: selectedHabit?.description || '',
+            expected_counter: selectedHabit?.expected_counter.toString() || '',
+          }}
+          onSubmit={selectedHabit ? editHabit : createHabit}
         >
-          {({ handleChange, handleBlur, handleSubmit, values }) => (
+          {({
+            isSubmitting,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+          }) => (
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Nuevo Hábito</Text>
+              <Text style={styles.modalTitle}>
+                {selectedHabit ? 'Editar hábito' : 'Nuevo hábito'}
+              </Text>
               <TextInput
                 placeholder="Nombre"
                 style={styles.input}
@@ -85,9 +93,8 @@ export default function HabitScreenModalForm({
                 style={styles.input}
                 value={values.expected_counter}
                 onChangeText={(text) => {
-                  // Sanitización: Solo permitir números positivos
-                  const sanitizedValue = text.replace(/[^0-9]/g, ''); // Elimina todo lo que no sea un dígito
-                  handleChange('expected_counter')(sanitizedValue); // Actualiza el estado con el valor limpio
+                  const sanitizedValue = text.replace(/[^0-9]/g, '');
+                  handleChange('expected_counter')(sanitizedValue);
                 }}
                 onBlur={handleBlur('expected_counter')}
               />
@@ -101,9 +108,10 @@ export default function HabitScreenModalForm({
                 <TouchableOpacity
                   style={styles.button}
                   onPress={handleSubmit as any}
+                  disabled={isSubmitting}
                 >
                   <Text style={styles.buttonText}>
-                    {isEditing ? 'Guardar' : 'Crear'}
+                    {selectedHabit ? 'Guardar' : 'Crear'}
                   </Text>
                 </TouchableOpacity>
               </View>

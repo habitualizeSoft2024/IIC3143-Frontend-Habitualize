@@ -13,7 +13,6 @@ import { router } from 'expo-router';
 
 function parseJwt(token: string) {
   try {
-    console.log('🚀 ~ parseJwt: ~ token', token); // Logging for development
     const parts = token.split('.');
 
     if (parts.length !== 3) {
@@ -34,7 +33,6 @@ function parseJwt(token: string) {
     // Decode the Base64Url payload (2nd part of the JWT)
     const decodedPayload = JSON.parse(base64UrlDecode(parts[1]));
 
-    console.log('✨ ~ parseJwt: ~ decodedPayload', decodedPayload); // Logging for development
     return decodedPayload;
   } catch (e) {
     console.error('Error parsing JWT', e);
@@ -45,6 +43,7 @@ function parseJwt(token: string) {
 const SessionContext = createContext<{
   token: string | null;
   userId: string | null;
+  username: string | null;
   loggedIn: boolean;
   signUp: ({
     username,
@@ -68,6 +67,7 @@ const SessionContext = createContext<{
 }>({
   token: '',
   userId: '',
+  username: '',
   loggedIn: false,
   signUp: () => ({}) as Promise<AxiosResponse>,
   logIn: () => ({}) as Promise<AxiosResponse>,
@@ -80,6 +80,7 @@ export function useSession() {
 
 export default function SessionProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
 
@@ -88,6 +89,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       try {
         setToken((await AsyncStorage.getItem('token')) ?? '');
         setUserId((await AsyncStorage.getItem('userId')) ?? '');
+        setUsername((await AsyncStorage.getItem('username')) ?? '');
       } catch (error) {
         console.error('Error loading session from AsyncStorage:', error);
       }
@@ -126,12 +128,24 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   }, [userId]);
 
   useEffect(() => {
-    if (token && userId) {
+    if (username === null) return;
+    const saveUsername = async () => {
+      try {
+        await AsyncStorage.setItem('username', username);
+      } catch (error) {
+        console.error('Error saving username to AsyncStorage:', error);
+      }
+    };
+    saveUsername();
+  }, [username]);
+
+  useEffect(() => {
+    if (token && userId && username) {
       setLoggedIn(true);
     } else {
       setLoggedIn(false);
     }
-  }, [token, userId]);
+  }, [token, userId, username]);
 
   async function signUp({
     username,
@@ -157,6 +171,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       const userId = parseJwt(token).user_id;
       setToken(token);
       setUserId(userId);
+      setUsername(username);
       router.navigate('/');
     } catch (error) {
       console.error('Error signing up:', error);
@@ -183,6 +198,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       const userId = parseJwt(token).user_id;
       setToken(token);
       setUserId(userId);
+      setUsername(username);
       router.navigate('/');
     } catch (error) {
       console.error('Error logging in:', error);
@@ -193,6 +209,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   async function logOut() {
     setToken('');
     setUserId('');
+    setUsername('');
   }
 
   if (token === null || userId === null) {
@@ -204,6 +221,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       value={{
         token: token,
         userId: userId,
+        username: username,
         loggedIn: loggedIn,
         signUp,
         logIn,

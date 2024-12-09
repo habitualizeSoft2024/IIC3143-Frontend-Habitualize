@@ -17,11 +17,9 @@ export default function LoginForm() {
   const handleLogin = async (values: any) => {
     try {
       await logIn(values);
-    } catch (error) {
-      console.error(error);
-      console.error('Login failed.');
+    } catch {
       setError(
-        '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que tu correo electrónico y contraseña son correctos?',
+        '¡Oops! Inicio de sesión fallido. ¿Estás seguro de que los datos ingresados son correctos?',
       );
     }
   };
@@ -74,10 +72,9 @@ export default function LoginForm() {
             {error && <Text>{error}</Text>}
             <View style={styles.footer}>
               <TouchableOpacity onPress={() => router.navigate('/signup')}>
-                <Text style={styles.link}>¿No tienes una cuenta?</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.link}>¿Se te olvidó tu contraseña?</Text>
+                <Text style={styles.link}>
+                  ¿No tienes una cuenta? ¡Haz click aquí para registrarte!
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

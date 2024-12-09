@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Screen from '@/components/Screen';
 import { router } from 'expo-router';
 
-export default function LandingPage() {
+export default function Landing() {
   return (
     <Screen>
       <View style={styles.container}>

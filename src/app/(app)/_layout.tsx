@@ -22,6 +22,13 @@ export default function RootLayout() {
       }}
     >
       <Drawer.Screen
+        name="profile"
+        options={{
+          drawerLabel: 'Perfil',
+          headerTitle: 'Perfil de usuario',
+        }}
+      />
+      <Drawer.Screen
         name="index"
         options={{
           drawerLabel: 'Inicio',
@@ -33,6 +40,13 @@ export default function RootLayout() {
         options={{
           drawerLabel: 'Hábitos',
           headerTitle: 'Mis Hábitos',
+        }}
+      />
+      <Drawer.Screen
+        name="stats"
+        options={{
+          drawerLabel: 'Estadísticas',
+          headerTitle: 'Mis Estadísticas',
         }}
       />
     </Drawer>
